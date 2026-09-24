@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Жишиг — Шүүхийн шийдвэрийн шинжилгээ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600;8..60,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme: light;
+  --bg:#f6f5f1; --surface:#ffffff; --surface-2:#faf9f6; --sunk:#f0efea;
+  --ink:#15171c; --ink-2:#4d4f55; --muted:#7d7e78;
+  --line:#e4e2da; --line-2:#efeee8;
+  --brand:#1d2b4f; --brand-ink:#ffffff; --brand-soft:#e8ecf5;
+  --accent:#9a6a12; --accent-soft:#f7eedb;
+  --ai:#5a47c7; --ai-soft:#efecfc;
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a;
+  --neg:#e34948; --good:#006300; --warn:#fab219; --crit:#d03b3b;
+  --grid:#e1e0d9; --axis:#c3c2b7;
+  --seq1:#cde2fb; --seq7:#0d366b;
+  --shadow:0 1px 2px rgba(20,23,28,.04),0 4px 16px rgba(20,23,28,.05);
+  --r:14px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme: dark;
+    --bg:#0f1013; --surface:#18191c; --surface-2:#1d1e22; --sunk:#141518;
+    --ink:#f3f2ee; --ink-2:#c3c2b7; --muted:#8f9089;
+    --line:#2c2d30; --line-2:#232427;
+    --brand:#e6ebf7; --brand-ink:#131a2e; --brand-soft:#1f2740;
+    --accent:#e0ac4c; --accent-soft:#2c2413;
+    --ai:#a598f3; --ai-soft:#231f3a;
+    --s1:#3987e5; --s2:#d95926; --s3:#199e70;
+    --neg:#e66767; --good:#0ca30c;
+    --grid:#2c2c2a; --axis:#383835;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.25);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --bg:#0f1013; --surface:#18191c; --surface-2:#1d1e22; --sunk:#141518;
+  --ink:#f3f2ee; --ink-2:#c3c2b7; --muted:#8f9089;
+  --line:#2c2d30; --line-2:#232427;
+  --brand:#e6ebf7; --brand-ink:#131a2e; --brand-soft:#1f2740;
+  --accent:#e0ac4c; --accent-soft:#2c2413;
+  --ai:#a598f3; --ai-soft:#231f3a;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70;
+  --neg:#e66767; --good:#0ca30c;
+  --grid:#2c2c2a; --axis:#383835;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.25);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.55 Inter,system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+button,input,textarea,select{font:inherit;color:inherit}
+h1,h2,h3{font-family:"Source Serif 4",Georgia,serif;font-weight:600;letter-spacing:-.01em;margin:0}
+.mono{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.86em}
+.num{font-variant-numeric:tabular-nums}
+mark{background:var(--accent-soft);color:var(--ink);border-radius:3px;padding:0 2px}
+.muted{color:var(--muted)} .ink2{color:var(--ink-2)}
+.wrap{max-width:1280px;margin:0 auto;padding:0 24px}
+
+/* ---------- Top bar ---------- */
+.top{position:sticky;top:0;z-index:30;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:20px;height:62px}
+.logo{display:flex;align-items:center;gap:10px;font-family:"Source Serif 4",serif;font-weight:700;font-size:21px;white-space:nowrap}
+.logo-mark{width:30px;height:30px;border-radius:8px;background:var(--brand);color:var(--brand-ink);display:grid;place-items:center}
+.nav{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;flex:1}
+.nav::-webkit-scrollbar{display:none}
+.nav a{padding:7px 12px;border-radius:9px;color:var(--ink-2);font-weight:500;font-size:14px;white-space:nowrap}
+.nav a:hover{background:var(--sunk);color:var(--ink)}
+.nav a.on{background:var(--brand-soft);color:var(--ink)}
+.top-actions{display:flex;align-items:center;gap:8px}
+.icon-btn{width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center;cursor:pointer}
+.icon-btn:hover{background:var(--sunk)}
+.qsearch{display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:0 10px;height:36px;width:230px;color:var(--muted);cursor:text;white-space:nowrap;overflow:hidden;font-size:13.5px}
+.qsearch kbd{margin-left:auto;font:11px Inter;border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+.avatar{width:34px;height:34px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-weight:700;font-size:13px}
+.demo-banner{background:var(--accent-soft);color:var(--accent);font-size:12.5px;text-align:center;padding:6px 16px;font-weight:500}
+
+/* ---------- Primitives ---------- */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+.pad{padding:20px}
+.card-h{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 20px;border-bottom:1px solid var(--line-2)}
+.card-h h3{font-size:17px}
+.eyebrow{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.btn{display:inline-flex;align-items:center;gap:8px;border-radius:10px;padding:9px 16px;font-weight:600;font-size:14px;border:1px solid var(--line);background:var(--surface);cursor:pointer;white-space:nowrap}
+.btn:hover{background:var(--sunk)}
+.btn.primary{background:var(--brand);color:var(--brand-ink);border-color:var(--brand)}
+.btn.primary:hover{filter:brightness(1.12)}
+.btn.ai{background:var(--ai);border-color:var(--ai);color:#fff}
+.btn.sm{padding:6px 11px;font-size:13px;border-radius:8px}
+.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface-2);border-radius:999px;padding:4px 11px;font-size:13px;color:var(--ink-2);white-space:nowrap}
+.chip.click{cursor:pointer} .chip.click:hover{border-color:var(--ink-2);color:var(--ink)}
+.tag{display:inline-flex;align-items:center;gap:5px;border-radius:6px;padding:2px 8px;font-size:12px;font-weight:600;white-space:nowrap}
+.tag.full{background:color-mix(in srgb,var(--s1) 14%,transparent);color:var(--s1)}
+.tag.part{background:color-mix(in srgb,var(--s3) 16%,transparent);color:var(--s3)}
+.tag.dis{background:color-mix(in srgb,var(--s2) 14%,transparent);color:var(--s2)}
+.tag.neu{background:var(--sunk);color:var(--ink-2)}
+.tag.ai{background:var(--ai-soft);color:var(--ai)}
+.law{font-family:"JetBrains Mono",monospace;font-size:12px;background:var(--brand-soft);color:var(--ink);border-radius:6px;padding:2px 7px;white-space:nowrap;cursor:pointer}
+.law:hover{outline:1px solid var(--ink-2)}
+.ai-badge{display:inline-flex;align-items:center;gap:5px;color:var(--ai);font-size:12px;font-weight:600;letter-spacing:.02em}
+.ai-panel{background:linear-gradient(180deg,var(--ai-soft),transparent 140px),var(--surface)}
+.grid{display:grid;gap:20px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.sp{flex:1}
+.hr{height:1px;background:var(--line-2);margin:16px 0}
+.section{padding-top:28px;padding-bottom:28px}
+.page-head{padding-top:28px;padding-bottom:8px}
+.page-head h1{font-size:30px}
+.crumbs{font-size:13px;color:var(--muted);margin-bottom:8px}
+.crumbs a:hover{color:var(--ink)}
+
+/* ---------- Stat tiles ---------- */
+.stat .v{font-size:28px;font-weight:700;letter-spacing:-.02em;line-height:1.1}
+.stat .l{font-size:13px;color:var(--ink-2);margin-top:4px}
+.stat .d{font-size:12.5px;margin-top:6px;color:var(--muted)}
+.up{color:var(--good)} .down{color:var(--neg)}
+
+/* ---------- Charts ---------- */
+.stack{display:flex;gap:2px;height:30px;border-radius:6px;overflow:hidden}
+.stack .seg{min-width:4px;cursor:default}
+.stack .seg:hover{filter:brightness(1.1)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--ink-2)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.hbars .r{display:grid;grid-template-columns:minmax(110px,190px) 1fr 64px;align-items:center;gap:12px;padding:6px 0;font-size:13.5px}
+.hbars .track{height:12px;background:var(--sunk);border-radius:0 4px 4px 0;position:relative}
+.hbars .fill{height:100%;border-radius:0 4px 4px 0;background:var(--s1)}
+.hbars .avgline{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--ink-2);opacity:.6}
+.div-bars .r{display:grid;grid-template-columns:minmax(150px,1.2fr) 2fr 52px;align-items:center;gap:12px;padding:8px 0;font-size:13.5px;border-bottom:1px solid var(--line-2)}
+.div-bars .r:last-child{border-bottom:0}
+.div-bars .axis{position:relative;height:14px}
+.div-bars .axis::before{content:"";position:absolute;left:50%;top:-6px;bottom:-6px;width:1px;background:var(--axis)}
+.div-bars .b{position:absolute;top:0;height:100%}
+.div-bars .b.pos{left:50%;background:var(--s1);border-radius:0 4px 4px 0}
+.div-bars .b.neg{right:50%;background:var(--neg);border-radius:4px 0 0 4px}
+.cols{display:flex;align-items:flex-end;gap:2px;height:150px;border-bottom:1px solid var(--axis);padding-top:8px}
+.cols .c{flex:1;background:var(--s1);border-radius:4px 4px 0 0;position:relative;min-height:2px}
+.cols .c.hl{background:var(--accent)}
+.cols .c:hover{filter:brightness(1.12)}
+.cols-x{display:flex;gap:2px;font-size:11.5px;color:var(--muted);margin-top:6px}
+.cols-x span{flex:1;text-align:center;white-space:nowrap}
+svg.chart{width:100%;height:auto;display:block;overflow:visible}
+svg.chart text{font:11px Inter,sans-serif;fill:var(--muted)}
+svg.chart .gl{stroke:var(--grid);stroke-width:1}
+svg.chart .bl{stroke:var(--axis);stroke-width:1}
+svg.chart .hit{fill:transparent}
+svg.chart .hit:hover{fill:var(--ink);fill-opacity:.04}
+.heat{display:grid;gap:2px;font-size:12px}
+.heat .cell{border-radius:4px;height:30px;display:grid;place-items:center;font-size:11px;font-variant-numeric:tabular-nums}
+.heat .lab{display:flex;align-items:center;color:var(--ink-2);padding-right:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.heat .xl{text-align:center;color:var(--muted)}
+#tip{position:fixed;z-index:99;pointer-events:none;background:var(--ink);color:var(--bg);font-size:12.5px;padding:7px 10px;border-radius:8px;max-width:280px;opacity:0;transition:opacity .08s;line-height:1.45;box-shadow:0 6px 20px rgba(0,0,0,.2)}
+#tip b{font-weight:600}
+
+/* ---------- Home ---------- */
+.hero{padding-top:56px;padding-bottom:36px;text-align:center}
+.hero h1{font-size:clamp(30px,4.6vw,50px);line-height:1.12;max-width:860px;margin:0 auto}
+.hero h1 em{font-style:normal;color:var(--accent)}
+.hero p.lead{font-size:17px;color:var(--ink-2);max-width:640px;margin:16px auto 0}
+.composer{max-width:860px;margin:30px auto 0;text-align:left;padding:6px}
+.mode-tabs{display:flex;gap:4px;padding:6px 6px 0}
+.mode-tabs button{border:0;background:none;padding:8px 12px;border-radius:9px;font-weight:600;font-size:13.5px;color:var(--muted);cursor:pointer}
+.mode-tabs button.on{background:var(--sunk);color:var(--ink)}
+.composer textarea{width:100%;border:0;background:transparent;resize:none;padding:14px 16px;font-size:16px;line-height:1.6;min-height:120px;outline:none}
+.composer .bar{display:flex;align-items:center;gap:8px;padding:8px 10px;border-top:1px solid var(--line-2);flex-wrap:wrap}
+.examples{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:18px}
+.feature{padding:22px}
+.feature .ic{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;background:var(--brand-soft);margin-bottom:14px}
+.feature h3{font-size:18px;margin-bottom:6px}
+.feature p{margin:0;color:var(--ink-2);font-size:14px}
+.list-item{display:flex;gap:14px;padding:14px 20px;border-bottom:1px solid var(--line-2);align-items:flex-start}
+.list-item:last-child{border-bottom:0}
+.list-item:hover{background:var(--surface-2)}
+
+/* ---------- Match ---------- */
+.match-grid{display:grid;grid-template-columns:340px minmax(0,1fr);gap:20px;align-items:start}
+.sticky{position:sticky;top:80px}
+.story{font-size:14px;color:var(--ink-2);background:var(--surface-2);border:1px solid var(--line-2);border-radius:10px;padding:12px 14px;line-height:1.6}
+.story mark{background:var(--accent-soft);color:var(--ink);border-radius:3px;padding:0 2px}
+.fact{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px dashed var(--line);font-size:13.5px}
+.fact:last-child{border-bottom:0}
+.fact .k{color:var(--muted)}
+.fact .v{font-weight:500;text-align:right}
+.ev{display:flex;align-items:center;gap:8px;font-size:13.5px;padding:4px 0}
+.dot{width:18px;height:18px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:700;flex:none}
+.dot.y{background:color-mix(in srgb,var(--good) 16%,transparent);color:var(--good)}
+.dot.n{background:color-mix(in srgb,var(--neg) 14%,transparent);color:var(--neg)}
+.dot.q{background:var(--sunk);color:var(--muted)}
+.question{border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:13.5px;margin-top:8px;background:var(--surface)}
+.question .opts{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.verdict{display:grid;grid-template-columns:auto 1fr;gap:28px;align-items:center}
+.big{font-family:"Source Serif 4",serif;font-size:64px;font-weight:700;line-height:1;letter-spacing:-.03em}
+.alert{display:flex;gap:12px;border-radius:12px;padding:14px 16px;font-size:14px;align-items:flex-start}
+.alert.warn{background:color-mix(in srgb,var(--warn) 14%,var(--surface));border:1px solid color-mix(in srgb,var(--warn) 45%,transparent)}
+.alert.conf{background:var(--ai-soft);border:1px solid color-mix(in srgb,var(--ai) 30%,transparent)}
+.alert .ic{flex:none;font-size:16px;line-height:1.3}
+.case-row{display:grid;grid-template-columns:58px 1fr;gap:14px;padding:16px 20px;border-bottom:1px solid var(--line-2);cursor:pointer}
+.case-row:hover{background:var(--surface-2)}
+.case-row:last-child{border-bottom:0}
+.sim{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:14px;background:conic-gradient(var(--s1) calc(var(--p)*1%),var(--sunk) 0);position:relative}
+.sim::after{content:"";position:absolute;inset:5px;border-radius:50%;background:var(--surface)}
+.sim span{position:relative;z-index:1;font-size:13px}
+.case-meta{font-size:12.5px;color:var(--muted);display:flex;gap:6px 12px;flex-wrap:wrap;margin-top:2px}
+.case-title{font-weight:600;font-size:15px}
+.why{font-size:13px;color:var(--ink-2);margin-top:8px}
+.why b{color:var(--ink);font-weight:600}
+.args .a{padding:12px 14px;border-radius:10px;border:1px solid var(--line-2);margin-bottom:10px;font-size:13.5px;background:var(--surface-2)}
+.args blockquote{margin:6px 0 0;font-family:"Source Serif 4",serif;font-size:14.5px;color:var(--ink);border-left:3px solid var(--line);padding-left:10px}
+.steps .s{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--line-2);font-size:14px}
+.steps .s:last-child{border-bottom:0}
+.steps .n{width:24px;height:24px;border-radius:50%;background:var(--brand);color:var(--brand-ink);display:grid;place-items:center;font-size:12px;font-weight:700;flex:none}
+.flow{display:flex;align-items:stretch;gap:0;flex-wrap:wrap}
+.flow .st{flex:1;min-width:130px;padding:12px 14px;border:1px solid var(--line);background:var(--surface-2);position:relative}
+.flow .st:first-child{border-radius:10px 0 0 10px}
+.flow .st:last-child{border-radius:0 10px 10px 0}
+.flow .st + .st{border-left:0}
+.flow .st .v{font-size:20px;font-weight:700}
+.flow .st .l{font-size:12px;color:var(--muted)}
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);overflow-x:auto;scrollbar-width:none}
+.tabs button{border:0;background:none;padding:10px 14px;font-weight:600;font-size:14px;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;cursor:pointer;white-space:nowrap}
+.tabs button.on{color:var(--ink);border-bottom-color:var(--ink)}
+
+/* ---------- Search ---------- */
+.search-grid{display:grid;grid-template-columns:270px minmax(0,1fr);gap:20px;align-items:start}
+.searchbar{display:flex;gap:10px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:6px 6px 6px 14px;box-shadow:var(--shadow)}
+.searchbar input{flex:1;border:0;background:none;outline:none;font-size:15.5px;padding:6px 0;min-width:0}
+.facet{padding:14px 18px;border-bottom:1px solid var(--line-2)}
+.facet:last-child{border-bottom:0}
+.facet h4{margin:0 0 8px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.facet label{display:flex;align-items:center;gap:8px;font-size:13.5px;padding:3px 0;cursor:pointer}
+.facet label .c{margin-left:auto;color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
+.facet input[type=checkbox]{accent-color:var(--brand);width:15px;height:15px}
+.facet select,.facet input[type=text]{width:100%;border:1px solid var(--line);border-radius:8px;padding:7px 9px;background:var(--surface-2);font-size:13.5px}
+.range{display:flex;gap:8px}
+.result{padding:18px 20px;border-bottom:1px solid var(--line-2);cursor:pointer}
+.result:hover{background:var(--surface-2)}
+.result:last-child{border-bottom:0}
+.result .sum{font-size:14px;color:var(--ink-2);margin:8px 0 10px}
+.result .sum mark{background:var(--accent-soft);color:var(--ink);padding:0 2px;border-radius:3px}
+.active-filters{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0}
+.active-filters .chip{background:var(--brand-soft);border-color:transparent;color:var(--ink)}
+
+/* ---------- Case ---------- */
+.case-grid{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:20px;align-items:start}
+.doc{font-family:"Source Serif 4",serif;font-size:16.5px;line-height:1.75;padding:40px 48px}
+.doc h2{font-size:15px;text-align:center;letter-spacing:.06em;text-transform:uppercase;margin:0 0 4px}
+.doc .sec{font-family:Inter,sans-serif;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--muted);margin:28px 0 8px;display:flex;align-items:center;gap:8px}
+.doc .sec::after{content:"";flex:1;height:1px;background:var(--line-2)}
+.doc p{margin:0 0 12px}
+.doc .hl-fact{background:color-mix(in srgb,var(--s1) 12%,transparent);border-radius:3px}
+.doc .hl-reason{background:var(--accent-soft);border-radius:3px}
+.doc .hl-law{background:var(--brand-soft);border-radius:3px}
+.chain{display:flex;flex-direction:column;gap:0}
+.chain .n{display:grid;grid-template-columns:22px 1fr;gap:10px;position:relative;padding-bottom:14px}
+.chain .n:not(:last-child)::before{content:"";position:absolute;left:10px;top:22px;bottom:0;width:2px;background:var(--line)}
+.chain .b{width:22px;height:22px;border-radius:50%;border:2px solid var(--line);background:var(--surface);display:grid;place-items:center;font-size:10px}
+.chain .n.cur .b{border-color:var(--ink);background:var(--ink);color:var(--bg)}
+.chat{display:flex;flex-direction:column;gap:10px}
+.msg{padding:10px 12px;border-radius:12px;font-size:13.5px;max-width:92%}
+.msg.me{align-self:flex-end;background:var(--brand);color:var(--brand-ink);border-bottom-right-radius:4px}
+.msg.bot{align-self:flex-start;background:var(--sunk);border-bottom-left-radius:4px}
+.msg.bot cite{display:block;font-style:normal;font-size:11.5px;color:var(--muted);margin-top:6px}
+.chat-in{display:flex;gap:8px;margin-top:12px}
+.chat-in input{flex:1;border:1px solid var(--line);border-radius:10px;padding:9px 12px;background:var(--surface-2);outline:none;min-width:0}
+
+/* ---------- Judge / law ---------- */
+.profile{display:flex;gap:20px;align-items:center}
+.profile .pic{width:72px;height:72px;border-radius:18px;background:var(--brand);color:var(--brand-ink);display:grid;place-items:center;font-family:"Source Serif 4",serif;font-size:28px;font-weight:700;flex:none}
+table.t{width:100%;border-collapse:collapse;font-size:13.5px}
+table.t th{text-align:left;font-weight:600;color:var(--muted);font-size:12px;letter-spacing:.04em;text-transform:uppercase;padding:10px 12px;border-bottom:1px solid var(--line)}
+table.t td{padding:10px 12px;border-bottom:1px solid var(--line-2);font-variant-numeric:tabular-nums}
+table.t tr:last-child td{border-bottom:0}
+.tbl-wrap{overflow-x:auto}
+.cluster{border:1px solid var(--line);border-radius:12px;padding:16px;background:var(--surface-2)}
+.cluster .pct{font-size:24px;font-weight:700}
+.conflict{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:stretch}
+.conflict .side{border:1px solid var(--line);border-radius:12px;padding:14px;font-size:13.5px;background:var(--surface-2)}
+.conflict .vs{display:grid;place-items:center;font-weight:700;color:var(--muted);font-size:13px}
+.note-area{width:100%;overflow-wrap:anywhere;min-height:260px;border:1px solid var(--line);border-radius:12px;padding:18px;background:var(--surface-2);font-family:"Source Serif 4",serif;font-size:15.5px;line-height:1.7;outline:none}
+.skeleton{animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.45}}
+.fade-in{animation:fi .35s ease both}
+@keyframes fi{from{opacity:0;transform:translateY(6px)}}
+footer{border-top:1px solid var(--line);margin-top:40px;padding:24px 0;font-size:13px;color:var(--muted)}
+
+/* ---------- Responsive ---------- */
+@media (max-width:1080px){
+  .match-grid,.search-grid,.case-grid{grid-template-columns:minmax(0,1fr)}
+  .sticky{position:static}
+  .g4{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .qsearch{display:none}
+}
+@media (max-width:720px){
+  .wrap{padding:0 16px}
+  .g2,.g3,.g4{grid-template-columns:minmax(0,1fr)}
+  .top .wrap{gap:10px}
+  .logo span.t{display:none}
+  .verdict{grid-template-columns:1fr;gap:14px}
+  .big{font-size:52px}
+  .doc{padding:24px 18px;font-size:15.5px}
+  .conflict{grid-template-columns:1fr}
+  .hbars .r{grid-template-columns:100px 1fr 52px}
+  .div-bars .r{grid-template-columns:1fr 1fr 44px}
+  .page-head h1{font-size:25px}
+  .hero{padding-top:36px;padding-bottom:24px}
+  .flow .st{min-width:50%;border-radius:0!important;border-left:1px solid var(--line)!important}
+}
+</style>
+</head>
+<body>
+<div class="demo-banner">Загвар (prototype) — бүх хэрэг, шүүгчийн нэр, тоон үзүүлэлт зохиомол жишээ өгөгдөл болно.</div>
+<header class="top">
+  <div class="wrap">
+    <a class="logo" href="#/"><span class="logo-mark"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M5 7h14M5 7l-3 7a4 4 0 0 0 6 0L5 7zM19 7l-3 7a4 4 0 0 0 6 0l-3-7zM8 21h8"/></svg></span><span class="t">Жишиг</span></a>
+    <nav class="nav" id="nav">
+      <a href="#/" data-r="">Нүүр</a>
+      <a href="#/match" data-r="match">Миний хэрэг</a>
+      <a href="#/search" data-r="search">Хайлт</a>
+      <a href="#/judge" data-r="judge">Шүүгч</a>
+      <a href="#/law" data-r="law">Хууль</a>
+      <a href="#/trends" data-r="trends">Тойм</a>
+      <a href="#/folder" data-r="folder">Хавтас</a>
+    </nav>
+    <div class="top-actions">
+      <div class="qsearch" onclick="location.hash='#/search'"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>Хэрэг, шүүгч, зүйл заалт…<kbd>/</kbd></div>
+      <button class="icon-btn" id="themeBtn" title="Өнгөний горим" aria-label="Өнгөний горим солих"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
+      <div class="avatar" title="Өмгөөлөгч Н.Ану">НА</div>
+    </div>
+  </div>
+</header>
+<main id="app"></main>
+<div id="tip"></div>
+
+<script>
+/* =====================================================================
+   MOCK DATA — illustrative only
+   ===================================================================== */
+const CASES = [
+ {id:"c1",no:"181/ШШ2025/01872",date:"2025-03-14",court:"Сүхбаатар дүүргийн Иргэний хэргийн анхан шатны шүүх",cs:"СБД анхан",level:"Анхан шат",type:"Иргэний",cat:"Зээлийн гэрээ",judge:"Б.Энхтуяа",
+  parties:"Иргэн Д.Б — Иргэн Г.Т",claim:18500000,award:18500000,out:"full",outL:"Бүрэн хангасан",sim:94,laws:["ИХ 281.1","ИХ 282.1","ИХШХШТХ 38.1"],days:88,
+  sum:"Нэхэмжлэгч хариуцагчид <mark>банкаар 18.5 сая төгрөг шилжүүлсэн</mark>, бичгээр гэрээ байгаагүй. Хариуцагч <mark>мессежээр “сар бүр хэсэгчлэн өгье”</mark> гэж бичсэнийг шүүх зээлийн харилцааг хүлээн зөвшөөрсөн гэж үзэв.",
+  why:"<b>Бичгээр гэрээгүй</b>, <b>банкны гүйлгээ</b> бий, <b>мессежээр хүлээн зөвшөөрсөн</b>, хувь хүн хооронд"},
+ {id:"c2",no:"183/ШШ2024/04410",date:"2024-11-02",court:"Баянзүрх дүүргийн Иргэний хэргийн анхан шатны шүүх",cs:"БЗД анхан",level:"Анхан шат",type:"Иргэний",cat:"Зээлийн гэрээ",judge:"Г.Мөнхбат",
+  parties:"Иргэн С.О — Иргэн Н.Э",claim:12000000,award:7000000,out:"part",outL:"Хэсэгчлэн хангасан",sim:91,laws:["ИХ 281.1","ИХ 232.6","ИХ 43.2"],days:121,
+  sum:"Гүйлгээний утга “зээл” гэж бичигдээгүй ч <mark>гэрчийн мэдүүлгээр</mark> зээлийн харилцаа нотлогдсон. <mark>Хүүгийн шаардлагыг</mark> бичгээр тохиролцоогүй тул хангаагүй.",
+  why:"<b>Бичгээр гэрээгүй</b>, <b>банкны гүйлгээ</b> бий, хүүгийн шаардлага нэмсэн"},
+ {id:"c3",no:"180/ШШ2024/02931",date:"2024-06-19",court:"Хан-Уул дүүргийн Иргэний хэргийн анхан шатны шүүх",cs:"ХУД анхан",level:"Анхан шат",type:"Иргэний",cat:"Зээлийн гэрээ",judge:"Т.Сарангэрэл",
+  parties:"Иргэн Э.Б — Иргэн Ж.Г",claim:25000000,award:0,out:"dis",outL:"Хэрэгсэхгүй болгосон",sim:88,laws:["ИХ 281.1","ИХ 476.1","ИХШХШТХ 38.1"],days:143,
+  sum:"Хариуцагч шилжүүлгийг <mark>хамтын бизнесийн хөрөнгө оруулалт</mark> байсан гэж нотолсон тул зээлийн харилцаа тогтоогдоогүй.",
+  why:"<b>Бичгээр гэрээгүй</b>, <b>банкны гүйлгээ</b> бий — харин хариуцагч өөр үндэслэл нотолсон"},
+ {id:"c4",no:"001/ХТ2024/00412",date:"2024-09-26",court:"Улсын Дээд шүүх",cs:"Дээд шүүх",level:"Хяналтын шат",type:"Иргэний",cat:"Зээлийн гэрээ",judge:"Хяналтын шатны бүрэлдэхүүн",
+  parties:"Иргэн Ц.А — Иргэн О.Б",claim:9800000,award:9800000,out:"full",outL:"Магадлалыг хүчингүй болгож, анхан шатны шийдвэрийг хэвээр үлдээсэн",sim:86,laws:["ИХ 281.1","ИХ 43.2","ИХШХШТХ 40.1"],days:0,
+  sum:"<mark>Бичгээр хийгээгүй зээлийн гэрээ</mark>-г банкны гүйлгээ болон талуудын <mark>захидал харилцаагаар</mark> тогтоож болно гэж тайлбарлав. Шүүхийн практикт чиглэл болох тогтоол.",
+  why:"<b>Жишиг тогтоол</b> — ижил нотлох баримтын асуудал", guiding:true},
+ {id:"c5",no:"210/МА2024/01120",date:"2024-04-08",court:"Нийслэлийн Иргэний хэргийн давж заалдах шатны шүүх",cs:"Давж заалдах",level:"Давж заалдах шат",type:"Иргэний",cat:"Зээлийн гэрээ",judge:"Д.Ганзориг",
+  parties:"Иргэн Б.С — Иргэн Х.Ц",claim:15000000,award:15000000,out:"full",outL:"Анхан шатны шийдвэрийг хэвээр үлдээсэн",sim:83,laws:["ИХ 281.1","ИХ 453.1"],days:0,
+  sum:"Хариуцагчийн <mark>“бэлэг байсан”</mark> гэх тайлбар нотлогдоогүй тул анхан шатны шийдвэрийг хэвээр үлдээв.",
+  why:"<b>15 сая</b> — ижил дүн, <b>бэлэг гэх эсрэг тайлбар</b>"},
+ {id:"c13",no:"146/ШШ2025/00311",date:"2025-02-03",court:"Дархан-Уул аймаг дахь Сум дундын шүүх",cs:"Дархан",level:"Анхан шат",type:"Иргэний",cat:"Зээлийн гэрээ",judge:"А.Нарантуяа",
+  parties:"Иргэн П.Б — Иргэн У.Д",claim:6000000,award:0,out:"dis",outL:"Хэрэгсэхгүй болгосон",sim:79,laws:["ИХ 75.2.1","ИХ 76.1","ИХ 281.1"],days:64,
+  sum:"<mark>Хөөн хэлэлцэх хугацаа</mark> өнгөрсөн гэж хариуцагч маргасныг шүүх хүлээн авч, нэхэмжлэлийг хэрэгсэхгүй болгов.",
+  why:"<b>Хугацаа хэтэрсэн</b> — таны хэрэгт анхаарах эрсдэл"},
+ {id:"c6",no:"182/ШШ2025/02207",date:"2025-05-21",court:"Чингэлтэй дүүргийн Иргэний хэргийн анхан шатны шүүх",cs:"ЧД анхан",level:"Анхан шат",type:"Иргэний",cat:"Хөдөлмөрийн маргаан",judge:"Л.Отгонбаяр",
+  parties:"Иргэн М.Ч — “Н” ХХК",claim:21400000,award:14100000,out:"part",outL:"Хэсэгчлэн хангасан",laws:["ХТХ 80.1","ХТХ 88.1","ИХШХШТХ 38.1"],days:97,
+  sum:"Ажил олгогч <mark>сахилгын шийтгэл ногдуулах журмыг зөрчиж</mark> ажлаас халсан тул ажилд эгүүлэн тогтоож, ажилгүй байсан хугацааны цалинг гаргуулав."},
+ {id:"c7",no:"183/ШШ2025/03015",date:"2025-06-30",court:"Баянзүрх дүүргийн Иргэний хэргийн анхан шатны шүүх",cs:"БЗД анхан",level:"Анхан шат",type:"Иргэний",cat:"Гэр бүлийн маргаан",judge:"Г.Мөнхбат",
+  parties:"Иргэн Т.Н — Иргэн Б.А",claim:0,award:0,out:"part",outL:"Хэсэгчлэн хангасан",laws:["ГБТХ 14.1","ГБТХ 40.1","ИХ 129.1"],days:132,
+  sum:"Гэрлэлтийг цуцалж, <mark>хамтран өмчлөх орон сууцыг</mark> тэнцүү хуваав. Хүүхдийн тэтгэлгийг сар бүр тогтоосон."},
+ {id:"c8",no:"128/ШШ2025/00587",date:"2025-04-11",court:"Нийслэлийн Захиргааны хэргийн анхан шатны шүүх",cs:"Захиргааны анхан",level:"Анхан шат",type:"Захиргааны",cat:"Газрын маргаан",judge:"Р.Батсүх",
+  parties:"“Т” ХХК — Нийслэлийн Засаг дарга",claim:0,award:0,out:"full",outL:"Бүрэн хангасан",laws:["ГТХ 40.1","ЗЕХ 47.1","ЗХХШТХ 106.3"],days:156,
+  sum:"Газар эзэмших эрхийг <mark>сонсох ажиллагаа явуулалгүйгээр</mark> цуцалсан захирамжийг хууль бус гэж хүчингүй болгов."},
+ {id:"c9",no:"2025/ШЦТ/1142",date:"2025-07-09",court:"Сонгинохайрхан дүүргийн Эрүүгийн хэргийн анхан шатны шүүх",cs:"СХД эрүүгийн",level:"Анхан шат",type:"Эрүүгийн",cat:"Залилах",judge:"О.Мягмарсүрэн",
+  parties:"Прокурор — Шүүгдэгч Д.Э",claim:0,award:0,out:"full",outL:"Гэм буруутайд тооцсон",laws:["ЭХ 17.3.2","ЭХ 5.1"],days:74,
+  sum:"Онлайн худалдааны нэрийдлээр <mark>11 хохирогчоос</mark> урьдчилгаа авч залилсан гэм буруутайд тооцож, хорих ял оногдуулав."},
+ {id:"c10",no:"181/ШШ2025/01140",date:"2025-02-17",court:"Сүхбаатар дүүргийн Иргэний хэргийн анхан шатны шүүх",cs:"СБД анхан",level:"Анхан шат",type:"Иргэний",cat:"Түрээсийн гэрээ",judge:"Б.Энхтуяа",
+  parties:"“Ш” ХХК — Иргэн Ө.Б",claim:8600000,award:8600000,out:"full",outL:"Бүрэн хангасан",laws:["ИХ 318.1","ИХ 232.6"],days:71,
+  sum:"Түрээслэгч <mark>4 сарын түрээсийн төлбөр</mark> төлөөгүй тул төлбөр болон гэрээнд заасан алдангийг гаргуулав."},
+ {id:"c11",no:"180/ШШ2025/01890",date:"2025-05-02",court:"Хан-Уул дүүргийн Иргэний хэргийн анхан шатны шүүх",cs:"ХУД анхан",level:"Анхан шат",type:"Иргэний",cat:"Гэм хор",judge:"Т.Сарангэрэл",
+  parties:"Иргэн Ү.Т — Иргэн Ч.Б",claim:32000000,award:19500000,out:"part",outL:"Хэсэгчлэн хангасан",laws:["ИХ 497.1","ИХ 498.1","ИХ 510.1"],days:168,
+  sum:"Зам тээврийн ослоор учирсан <mark>тээврийн хэрэгслийн хохирлыг</mark> шинжээчийн дүгнэлтээр тогтоож, сэтгэл санааны хохирлыг хангаагүй."},
+ {id:"c12",no:"183/ШШ2025/01777",date:"2025-03-28",court:"Баянзүрх дүүргийн Иргэний хэргийн анхан шатны шүүх",cs:"БЗД анхан",level:"Анхан шат",type:"Иргэний",cat:"Худалдах, худалдан авах",judge:"Г.Мөнхбат",
+  parties:"Иргэн С.Б — “М” ХХК",claim:4700000,award:0,out:"dis",outL:"Хэрэгсэхгүй болгосон",laws:["ИХ 243.1","ИХ 254.1"],days:83,
+  sum:"Худалдан авсан автомашины <mark>нуугдмал доголдол</mark> хүлээлгэн өгөх үед байсан нь нотлогдоогүй."}
+];
+const LAWNAMES = {"ИХ":"Иргэний хууль","ИХШХШТХ":"Иргэний хэрэг шүүхэд хянан шийдвэрлэх тухай хууль","ХТХ":"Хөдөлмөрийн тухай хууль","ГБТХ":"Гэр бүлийн тухай хууль","ГТХ":"Газрын тухай хууль","ЗЕХ":"Захиргааны ерөнхий хууль","ЗХХШТХ":"Захиргааны хэрэг шүүхэд хянан шийдвэрлэх тухай хууль","ЭХ":"Эрүүгийн хууль"};
+const CATS = ["Зээлийн гэрээ","Хөдөлмөрийн маргаан","Гэр бүлийн маргаан","Түрээсийн гэрээ","Гэм хор","Худалдах, худалдан авах","Газрын маргаан","Залилах"];
+const TYPES = ["Иргэний","Эрүүгийн","Захиргааны"];
+const LEVELS = ["Анхан шат","Давж заалдах шат","Хяналтын шат"];
+const OUT = {full:{l:"Бүрэн хангасан",c:"--s1",t:"full"},part:{l:"Хэсэгчлэн хангасан",c:"--s3",t:"part"},dis:{l:"Хэрэгсэхгүй болгосон",c:"--s2",t:"dis"}};
+
+/* =====================================================================
+   HELPERS
+   ===================================================================== */
+const $ = s => document.querySelector(s);
+const fmt = n => n.toLocaleString("en-US");
+const money = n => n ? fmt(n)+"₮" : "—";
+const mln = n => (n/1e6).toLocaleString("en-US",{maximumFractionDigits:1})+" сая₮";
+const lawChip = l => `<span class="law" title="${LAWNAMES[l.split(" ")[0]]||""}" onclick="event.stopPropagation();location.hash='#/law'">${l}</span>`;
+const outTag = c => `<span class="tag ${OUT[c.out].t}">${c.level==="Анхан шат"||c.type!=="Иргэний"?c.outL:shortOut(c)}</span>`;
+const shortOut = c => c.outL.length>28 ? (c.out==="full"?"Нэхэмжлэгчийн талд":"Хариуцагчийн талд") : c.outL;
+const sparkle = `<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.9 5.6L19.5 9.5l-5.6 1.9L12 17l-1.9-5.6L4.5 9.5l5.6-1.9zM19 14l.9 2.6 2.6.9-2.6.9L19 21l-.9-2.6-2.6-.9 2.6-.9z"/></svg>`;
+const ai = (t="AI шинжилгээ") => `<span class="ai-badge">${sparkle}${t}</span>`;
+const ic = p => `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+
+function stackBar(segs){
+  return `<div class="stack">${segs.map(s=>`<div class="seg" style="flex:${s.v};background:var(${s.c})" data-tip="<b>${s.l}</b><br>${s.v}%${s.n?` · ${s.n} хэрэг`:""}"></div>`).join("")}</div>`;
+}
+function legend(items){return `<div class="legend">${items.map(i=>`<span><i style="background:var(${i.c})"></i>${i.l}</span>`).join("")}</div>`}
+
+function hbars(rows,{max=100,avg=null,suffix="%"}={}){
+  return `<div class="hbars">${rows.map(r=>`<div class="r"><span class="ink2" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.l}</span>
+   <div class="track" data-tip="<b>${r.l}</b><br>${r.v}${suffix}${r.n?` · n=${r.n}`:""}${avg!=null?`<br>Дундаж: ${avg}${suffix}`:""}"><div class="fill" style="width:${r.v/max*100}%;${r.c?`background:var(${r.c})`:""}"></div>${avg!=null?`<div class="avgline" style="left:${avg/max*100}%"></div>`:""}</div>
+   <span class="num" style="text-align:right;font-weight:600">${r.v}${suffix}${r.n?`<span class="muted" style="font-weight:400;font-size:11.5px"> n=${r.n}</span>`:""}</span></div>`).join("")}</div>`;
+}
+function cols(vals,labels,{hl=-1,unit=""}={}){
+  const m = Math.max(...vals);
+  return `<div class="cols">${vals.map((v,i)=>`<div class="c ${i===hl?"hl":""}" style="height:${v/m*100}%" data-tip="<b>${labels[i]}</b><br>${v}${unit}"></div>`).join("")}</div>
+  <div class="cols-x">${labels.map(l=>`<span>${l}</span>`).join("")}</div>`;
+}
+function lineChart(labels,series,{h=230,yfmt=v=>fmt(v)}={}){
+  const W=640,H=h,L=46,R=series.length>1?96:16,T=14,B=28, iw=W-L-R, ih=H-T-B;
+  const all=series.flatMap(s=>s.vals); let max=Math.max(...all);
+  const step=Math.pow(10,Math.floor(Math.log10(max)))/ (max/Math.pow(10,Math.floor(Math.log10(max)))<3?2:1);
+  max=Math.ceil(max/step)*step;
+  const x=i=>L+(labels.length===1?iw/2:i*iw/(labels.length-1)), y=v=>T+ih-(v/max)*ih;
+  let g="";
+  for(let v=0;v<=max+1e-9;v+=step){g+=`<line class="gl" x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}"/><text x="${L-8}" y="${y(v)+4}" text-anchor="end">${yfmt(v)}</text>`}
+  g+=`<line class="bl" x1="${L}" x2="${W-R}" y1="${T+ih}" y2="${T+ih}"/>`;
+  labels.forEach((l,i)=>{ if(labels.length<=12||i%2===0) g+=`<text x="${x(i)}" y="${H-8}" text-anchor="middle">${l}</text>`});
+  series.forEach(s=>{
+    g+=`<path d="${s.vals.map((v,i)=>(i?"L":"M")+x(i)+" "+y(v)).join("")}" fill="none" stroke="var(${s.c})" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+    const li=s.vals.length-1;
+    g+=`<circle cx="${x(li)}" cy="${y(s.vals[li])}" r="4" fill="var(${s.c})" stroke="var(--surface)" stroke-width="2"/>`;
+    if(series.length>1) g+=`<text x="${x(li)+10}" y="${y(s.vals[li])+4+(s.dy||0)}" style="fill:var(--ink-2);font-weight:500">${s.name}</text>`;
+  });
+  const cw=iw/Math.max(1,labels.length-1);
+  labels.forEach((l,i)=>{
+    const tip=`<b>${l}</b>`+series.map(s=>`<br>${s.name}: ${yfmt(s.vals[i])}`).join("");
+    g+=`<rect class="hit" x="${x(i)-cw/2}" y="${T}" width="${cw}" height="${ih}" data-tip="${tip.replace(/"/g,"&quot;")}"/>`;
+  });
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img">${g}</svg>`;
+}
+function seqColor(t){ // one-hue blue ramp, light -> dark
+  const ramp=["#cde2fb","#9ec5f4","#6da7ec","#3987e5","#256abf","#184f95","#0d366b"];
+  const i=Math.min(ramp.length-1,Math.floor(t*(ramp.length-1)+.0001)); return ramp[i];
+}
+function heatmap(rows,colsL,data){
+  const m=Math.max(...data.flat());
+  let h=`<div class="heat" style="grid-template-columns:minmax(120px,170px) repeat(${colsL.length},1fr)"><div></div>${colsL.map(c=>`<div class="xl">${c}</div>`).join("")}`;
+  rows.forEach((r,ri)=>{
+    h+=`<div class="lab">${r}</div>`;
+    data[ri].forEach((v,ci)=>{const t=v/m; h+=`<div class="cell" style="background:${seqColor(t)};color:${t>.5?"#fff":"#1d2b4f"}" data-tip="<b>${r}</b> · ${colsL[ci]}<br>${fmt(v)} шийдвэр">${v>=1000?(v/1000).toFixed(1)+"k":v}</div>`});
+  });
+  return h+"</div>";
+}
+
+/* =====================================================================
+   PAGES
+   ===================================================================== */
+const EX = [
+ {t:"Найздаа мөнгө зээлсэн, буцааж өгөхгүй байна",s:"Би 2023 оны 12-р сард найздаа 15 сая төгрөг зээлсэн. Бичгээр гэрээ хийгээгүй, харин банкаар шилжүүлсэн гүйлгээ бий. Тэр мессежээр “зун өгнө” гэж бичсэн. Одоо утсаа авахгүй, мөнгөө өгөхгүй байна."},
+ {t:"Ажлаас үндэслэлгүй халагдсан",s:"Намайг ажлаас тайлбар авалгүйгээр, сахилгын шийтгэлгүйгээр нэг өдрийн дотор халсан. 6 жил ажилласан."},
+ {t:"Түрээслэгч төлбөрөө төлөхгүй",s:"Орон сууцаа түрээслүүлсэн, 4 сар төлбөр төлөөгүй, гэрээнд алданги заасан."},
+ {t:"Газрын эрхийг минь цуцалсан",s:"Дүүргийн Засаг дарга миний газар эзэмших эрхийг надад мэдэгдэлгүйгээр цуцалсан."}
+];
+let composerMode = 0;
+
+function pageHome(){
+  const recent = CASES.filter(c=>c.guiding||c.level!=="Анхан шат").concat(CASES.slice(6,8));
+  return `
+  <section class="hero wrap fade-in">
+    <div class="eyebrow" style="margin-bottom:14px">412,380 шийдвэр · 68 шүүх · 2008–2026</div>
+    <h1>Юу болсныг бичээрэй. Шүүх <em>ийм хэргийг</em> хэрхэн шийддэгийг харуулъя.</h1>
+    <p class="lead">shuukh.mn дээрх бүх шийдвэрийг AI уншиж, ангилж, холбосон. Өмгөөлөгч, хуульчид секундийн дотор жишиг хэрэг, шүүгчийн хандлага, хуулийн тайлбарыг олно.</p>
+    <div class="card composer">
+      <div class="mode-tabs">${["Нөхцөл байдал","Түлхүүр үг","Хуулийн зүйл заалт","Хэргийн дугаар"].map((m,i)=>`<button class="${i===composerMode?"on":""}" onclick="composerMode=${i};render()">${m}</button>`).join("")}</div>
+      <textarea id="story" placeholder="${["Жишээ: Би найздаа 15 сая төгрөг зээлсэн, бичгээр гэрээ хийгээгүй…","Жишээ: утгагүй шилжүүлэг зээл нотлох","Жишээ: Иргэний хуулийн 281.1","Жишээ: 181/ШШ2025/01872"][composerMode]}"></textarea>
+      <div class="bar">
+        <button class="chip click" title="Файл хавсаргах">${ic('<path d="M21 12.5 12.7 20.8a5 5 0 0 1-7.1-7.1l8.5-8.5a3.3 3.3 0 0 1 4.7 4.7l-8.5 8.5a1.7 1.7 0 0 1-2.4-2.4l7.8-7.8"/>')}Нотлох баримт хавсаргах</button>
+        <button class="chip click" title="Дуугаар оруулах">${ic('<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>')}Дуугаар</button>
+        <span class="sp"></span>
+        <span class="muted" style="font-size:12.5px">Таны мэдээлэл нууц хадгалагдана</span>
+        <button class="btn ai" onclick="goMatch()">${sparkle} Шинжлэх</button>
+      </div>
+    </div>
+    <div class="examples">${EX.map((e,i)=>`<span class="chip click" onclick="useEx(${i})">${e.t}</span>`).join("")}</div>
+  </section>
+
+  <section class="wrap section">
+    <div class="grid g4">
+      ${[
+        ["Ижил хэрэг олох",'<path d="M4 7h16M4 12h10M4 17h6"/><circle cx="18" cy="16" r="3"/><path d="m20.2 18.2 1.8 1.8"/>',"Нөхцөл байдлаа энгийн үгээр бичихэд AI баримтуудыг задлан, утгын хувьд ижил хэргүүдийг олно."],
+        ["Шийдвэрийн магадлал",'<path d="M3 20h18M6 16v-5M11 16V8M16 16v-3M20 16V5"/>',"Ижил хэргүүдийн хэдэн хувь нь хэрхэн шийдэгдсэн, ямар хүчин зүйл нөлөөлсөн болохыг харуулна."],
+        ["Шүүгчийн хандлага",'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',"Шүүгч бүрийн шийдвэрийн түүх, хугацаа, давж заалдахад өөрчлөгдсөн хувь."],
+        ["Зөрүүтэй практик",'<path d="M7 4v16M17 4v16M3 8h8M13 16h8"/>',"Нэг асуудлыг өөр өөрөөр шийдсэн шийдвэрүүдийг автоматаар илрүүлнэ."]
+      ].map(f=>`<div class="card feature"><div class="ic">${ic(f[1])}</div><h3>${f[0]}</h3><p>${f[2]}</p></div>`).join("")}
+    </div>
+  </section>
+
+  <section class="wrap section" style="padding-top:0">
+    <div class="grid g2">
+      <div class="card">
+        <div class="card-h"><h3>Сүүлд нэмэгдсэн чухал шийдвэр</h3><a class="btn sm" href="#/search">Бүгд</a></div>
+        ${recent.slice(0,4).map(c=>`<a class="list-item" href="#/case/${c.id}">
+          <div style="flex:1;min-width:0"><div class="row" style="gap:8px">${c.guiding?`<span class="tag ai">★ Жишиг тогтоол</span>`:""}<span class="tag neu">${c.cat}</span><span class="muted" style="font-size:12.5px">${c.date}</span></div>
+          <div style="margin-top:6px;font-size:14px" class="ink2">${c.sum.replace(/<\/?mark>/g,"")}</div>
+          <div class="case-meta"><span>${c.court}</span></div></div></a>`).join("")}
+      </div>
+      <div class="card">
+        <div class="card-h"><h3>Энэ сарын хандлага</h3><a class="btn sm" href="#/trends">Тойм</a></div>
+        <div class="pad">
+          <div class="grid g3" style="gap:14px">
+            <div class="stat"><div class="v num">3,912</div><div class="l">Шинэ шийдвэр</div><div class="d"><span class="up">▲ 6.1%</span> өмнөх сараас</div></div>
+            <div class="stat"><div class="v num">41%</div><div class="l">Зээлийн маргаан</div><div class="d">иргэний хэргийн</div></div>
+            <div class="stat"><div class="v num">96</div><div class="l">Дундаж хоног</div><div class="d"><span class="down">▲ 8</span> хоногоор уртассан</div></div>
+          </div>
+          <div class="hr"></div>
+          <div class="eyebrow" style="margin-bottom:8px">Хамгийн их өссөн маргааны төрөл</div>
+          ${hbars([{l:"Онлайн залилах",v:38},{l:"Цахим зээл (апп)",v:27},{l:"Хөдөлмөрийн маргаан",v:14},{l:"Орон сууцны түрээс",v:9}],{max:40,suffix:"%"})}
+          <div class="muted" style="font-size:12px;margin-top:6px">Өмнөх оны мөн үетэй харьцуулсан өсөлт</div>
+        </div>
+      </div>
+    </div>
+  </section>`;
+}
+function useEx(i){ $("#story").value = EX[i].s; $("#story").focus(); }
+function goMatch(){ const v=$("#story")?.value.trim(); if(v) sessionStorage.setItem("story",v); location.hash="#/match"; }
+
+/* ----- MATCH ----- */
+let matchTab = 0;
+function pageMatch(){
+  let story = EX[0].s; try{ story = sessionStorage.getItem("story")||story }catch(e){}
+  const hlStory = story.replace(/(15 сая төгрөг|зээлсэн|Бичгээр гэрээ хийгээгүй|банкаар шилжүүлсэн гүйлгээ|мессежээр “зун өгнө”|2023 оны 12-р сард)/g,"<mark>$1</mark>");
+  const sim = CASES.filter(c=>c.sim).sort((a,b)=>b.sim-a.sim);
+  return `
+  <div class="wrap page-head fade-in">
+    <div class="crumbs"><a href="#/">Нүүр</a> / Миний хэрэг</div>
+    <div class="row"><h1>Зээлийн гэрээний маргаан</h1><span class="tag ai">${sparkle} 147 ижил хэрэг олдсон</span><span class="sp"></span>
+      <button class="btn sm" onclick="toast('Хавтсанд хадгаллаа')">${ic('<path d="M6 3h12v18l-6-4-6 4z"/>')}Хадгалах</button>
+      <button class="btn sm primary" onclick="location.hash='#/folder'">${ic('<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/>')}Дүгнэлт бэлтгэх</button></div>
+  </div>
+  <div class="wrap match-grid" style="margin-top:16px">
+    <!-- LEFT: what AI understood -->
+    <aside class="sticky grid" style="gap:16px">
+      <div class="card pad ai-panel">
+        <div class="row" style="justify-content:space-between;margin-bottom:10px">${ai("AI ойлгосон зүйл")}<button class="btn sm" onclick="location.hash='#/'">Засах</button></div>
+        <div class="story">${hlStory}</div>
+        <div style="margin-top:14px">
+          <div class="fact"><span class="k">Маргааны төрөл</span><span class="v">Зээлийн гэрээ <span class="muted" style="font-weight:400">· 97%</span></span></div>
+          <div class="fact"><span class="k">Хэргийн төрөл</span><span class="v">Иргэний · Анхан шат</span></div>
+          <div class="fact"><span class="k">Талууд</span><span class="v">Хувь хүн ↔ Хувь хүн</span></div>
+          <div class="fact"><span class="k">Нэхэмжлэх дүн</span><span class="v num">15,000,000₮</span></div>
+          <div class="fact"><span class="k">Зээлсэн огноо</span><span class="v">2023.12</span></div>
+          <div class="fact"><span class="k">Харьяалах шүүх</span><span class="v">Хариуцагчийн оршин суугаа газар</span></div>
+        </div>
+        <div class="eyebrow" style="margin:14px 0 6px">Нотлох баримт</div>
+        <div class="ev"><span class="dot y">✓</span>Банкны гүйлгээний баримт</div>
+        <div class="ev"><span class="dot y">✓</span>Мессеж — буцааж өгнө гэсэн</div>
+        <div class="ev"><span class="dot n">✕</span>Бичгээр гэрээ</div>
+        <div class="ev"><span class="dot q">?</span>Гэрч</div>
+        <div class="eyebrow" style="margin:16px 0 2px">Нарийвчлал нэмэх асуултууд</div>
+        <div class="question">Гүйлгээний утга дээр юу гэж бичсэн бэ?
+          <div class="opts"><span class="chip click" onclick="answer(this)">“Зээл”</span><span class="chip click" onclick="answer(this)">Хоосон</span><span class="chip click" onclick="answer(this)">Өөр утга</span></div></div>
+        <div class="question">Хүү төлөхөөр тохирсон уу?
+          <div class="opts"><span class="chip click" onclick="answer(this)">Тийм, бичгээр</span><span class="chip click" onclick="answer(this)">Амаар</span><span class="chip click" onclick="answer(this)">Үгүй</span></div></div>
+      </div>
+    </aside>
+
+    <!-- RIGHT: analysis -->
+    <section class="grid" style="gap:20px;min-width:0">
+      <div class="alert warn"><span class="ic">⚠</span><div><b>Хугацааны эрсдэл.</b> Гэрээнээс үүсэх шаардлагын хөөн хэлэлцэх хугацаа 3 жил (ИХ 75.2.1). Буцаан өгөх хугацаа 2024 оны зун гэж үзвэл <b>2027 оны зун</b> дуусна. Ижил 147 хэргийн <b>9</b> нь зөвхөн энэ үндэслэлээр хэрэгсэхгүй болсон.</div></div>
+
+      <div class="card pad">
+        <div class="row" style="justify-content:space-between;margin-bottom:16px"><div><div class="eyebrow">Ижил 147 хэргийн үр дүн</div><h2 style="font-size:21px;margin-top:4px">Шүүх ихэнхдээ зээлдүүлэгчийн талд шийдсэн</h2></div>${ai()}</div>
+        <div class="verdict">
+          <div><div class="big num">76%</div><div class="ink2" style="font-size:13.5px;margin-top:6px">бүрэн эсвэл хэсэгчлэн<br>хангагдсан</div></div>
+          <div>
+            ${stackBar([{v:52,c:"--s1",l:"Бүрэн хангасан",n:76},{v:24,c:"--s3",l:"Хэсэгчлэн хангасан",n:36},{v:24,c:"--s2",l:"Хэрэгсэхгүй болгосон",n:35}])}
+            <div class="row" style="justify-content:space-between;margin:8px 0 12px;font-size:13px">
+              <span><b>52%</b> <span class="muted">бүрэн</span></span><span><b>24%</b> <span class="muted">хэсэгчлэн</span></span><span><b>24%</b> <span class="muted">хэрэгсэхгүй</span></span></div>
+            ${legend([{c:"--s1",l:"Бүрэн хангасан"},{c:"--s3",l:"Хэсэгчлэн хангасан"},{c:"--s2",l:"Хэрэгсэхгүй болгосон"}])}
+          </div>
+        </div>
+        <div class="hr"></div>
+        <div class="grid g4" style="gap:14px">
+          <div class="stat"><div class="v num">86%</div><div class="l">Нэхэмжилсэн дүнгийн дундаж хангагдсан хувь</div></div>
+          <div class="stat"><div class="v num">94 хоног</div><div class="l">Анхан шатны дундаж хугацаа</div></div>
+          <div class="stat"><div class="v num">38%</div><div class="l">Давж заалдсан</div><div class="d">үүнээс 11% нь өөрчлөгдсөн</div></div>
+          <div class="stat"><div class="v num">≈170,000₮</div><div class="l">Улсын тэмдэгтийн хураамж (тооцоолол)</div></div>
+        </div>
+        <p class="muted" style="font-size:12.5px;margin:14px 0 0">Энэ нь урьдчилсан таамаг биш — өнгөрсөн шийдвэрүүдийн статистик. Хэрэг бүрийн нөхцөл өөр байж болно.</p>
+      </div>
+
+      <div class="tabs">${["Ижил хэргүүд","Юу нөлөөлсөн бэ","Шүүхийн аргумент","Шүүх ба хугацаа","Дараагийн алхам"].map((t,i)=>`<button class="${i===matchTab?"on":""}" onclick="matchTab=${i};render(true)">${t}</button>`).join("")}</div>
+      <div id="matchBody">${matchBody(sim)}</div>
+    </section>
+  </div>`;
+}
+function matchBody(sim){
+  if(matchTab===0) return `
+    <div class="card">
+      <div class="card-h"><div class="row" style="gap:8px"><h3>Хамгийн төстэй шийдвэрүүд</h3><span class="muted" style="font-size:13px">утгын төстэй байдлаар</span></div>
+        <select style="border:1px solid var(--line);border-radius:8px;padding:5px 8px;background:var(--surface-2);font-size:13px"><option>Төстэй байдал</option><option>Огноо</option><option>Шатлал</option></select></div>
+      ${sim.map(c=>`<div class="case-row" onclick="location.hash='#/case/${c.id}'">
+        <div class="sim" style="--p:${c.sim}"><span>${c.sim}%</span></div>
+        <div style="min-width:0">
+          <div class="row" style="gap:8px">${c.guiding?`<span class="tag ai">★ Жишиг</span>`:""}<span class="case-title">${c.cs} · ${c.cat}</span>${outTag(c)}</div>
+          <div class="case-meta"><span class="mono">${c.no}</span><span>${c.date}</span><span>Шүүгч ${c.judge}</span>${c.claim?`<span>Нэхэмжлэл ${mln(c.claim)}</span>`:""}</div>
+          <div class="why">${c.sum}</div>
+          <div class="why" style="margin-top:6px">${sparkle} <span class="muted">Яагаад төстэй:</span> ${c.why}</div>
+          <div class="row" style="gap:6px;margin-top:8px">${c.laws.map(lawChip).join("")}</div>
+        </div></div>`).join("")}
+      <div class="pad" style="text-align:center"><button class="btn sm">Бусад 141 хэргийг харах</button></div>
+    </div>`;
+  if(matchTab===1) return `
+    <div class="card pad">
+      <div class="row" style="justify-content:space-between"><h3 style="font-size:18px">Шийдвэрт нөлөөлсөн хүчин зүйлс</h3>${ai()}</div>
+      <p class="ink2" style="font-size:13.5px;margin:6px 0 14px">Тухайн хүчин зүйл байх үед нэхэмжлэл хангагдах магадлал хэдэн пунктээр өөрчлөгдсөн бэ (ижил 147 хэрэг дээр).</p>
+      <div class="row" style="justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:4px"><span></span><span>◀ бууруулсан &nbsp;|&nbsp; нэмэгдүүлсэн ▶</span><span></span></div>
+      <div class="div-bars">
+        ${[["Банкны гүйлгээний баримттай",23,"y"],["Мессежээр өрөө хүлээн зөвшөөрсөн",19,"y"],["Гэрчийн мэдүүлэгтэй",8,"q"],["Гүйлгээний утга “зээл” биш",-12,"q"],["Хүүг бичгээр тохироогүй (хүүгийн хэсэгт)",-31,"n"],["“Хамтын бизнес / бэлэг” гэх эсрэг тайлбар",-27,"—"]].map(f=>`
+        <div class="r"><span>${f[2]==="y"?'<span class="dot y" style="display:inline-grid;margin-right:6px">✓</span>':f[2]==="n"?'<span class="dot n" style="display:inline-grid;margin-right:6px">✕</span>':'<span class="dot q" style="display:inline-grid;margin-right:6px">?</span>'}${f[0]}</span>
+          <div class="axis" data-tip="<b>${f[0]}</b><br>${f[1]>0?"+":""}${f[1]} пункт"><div class="b ${f[1]>0?"pos":"neg"}" style="width:${Math.abs(f[1])/35*50}%"></div></div>
+          <span class="num" style="text-align:right;font-weight:600">${f[1]>0?"+":""}${f[1]}</span></div>`).join("")}
+      </div>
+      <div class="legend" style="margin-top:12px"><span><span class="dot y" style="display:inline-grid;margin-right:6px">✓</span>Танд байгаа</span><span><span class="dot n" style="display:inline-grid;margin-right:6px">✕</span>Танд байхгүй</span><span><span class="dot q" style="display:inline-grid;margin-right:6px">?</span>Тодорхойгүй</span></div>
+    </div>
+    <div class="alert conf" style="margin-top:20px"><span class="ic" style="color:var(--ai)">${sparkle}</span><div><b>Зөрүүтэй практик илэрсэн.</b> “Утгагүй шилжүүлэг зээл мөн эсэх” асуудлаар 20 шийдвэрээс <b>14</b> нь зээлийн гэрээ (ИХ 281), <b>6</b> нь үндэслэлгүйгээр хөрөнгөжих (ИХ 492) гэж дүгнэсэн. Нэхэмжлэлдээ <b>хоёр үндэслэлийг</b> хувилбараар дурдахыг зөвлөж байна. <a href="#/law" style="text-decoration:underline">Харьцуулах →</a></div></div>`;
+  if(matchTab===2) return `
+    <div class="grid g2">
+      <div class="card pad args"><div class="row" style="margin-bottom:10px"><span class="tag full">Хүлээн авсан аргумент</span></div>
+        <div class="a"><b>Мессеж = өрийг хүлээн зөвшөөрсөн</b><blockquote>“…хариуцагчийн илгээсэн мессеж нь мөнгийг буцаан өгөх үүргээ хүлээн зөвшөөрсөн утгатай тул талуудын хооронд зээлийн харилцаа үүссэн гэж үзнэ.”</blockquote><div class="case-meta" style="margin-top:6px"><a href="#/case/c1">181/ШШ2025/01872</a> · 31 шийдвэрт давтагдсан</div></div>
+        <div class="a"><b>Бичгийн хэлбэр заавал биш</b><blockquote>“…гэрээ бичгээр хийгдээгүй нь түүнийг хүчин төгөлдөр бус гэж үзэх үндэслэл болохгүй, бусад нотлох баримтаар тогтоогдож болно.”</blockquote><div class="case-meta" style="margin-top:6px"><a href="#/case/c4">001/ХТ2024/00412</a> · Хяналтын шат</div></div>
+      </div>
+      <div class="card pad args"><div class="row" style="margin-bottom:10px"><span class="tag dis">Эсрэг талын амжилттай аргумент</span></div>
+        <div class="a"><b>“Хамтын бизнесийн хөрөнгө оруулалт”</b><blockquote>“…шилжүүлсэн мөнгө нь талуудын хамтран эрхэлсэн үйл ажиллагааны зардалд зарцуулагдсан болох нь тогтоогдсон.”</blockquote><div class="case-meta" style="margin-top:6px"><a href="#/case/c3">180/ШШ2024/02931</a> · 9 шийдвэрт</div></div>
+        <div class="a"><b>Хөөн хэлэлцэх хугацаа</b><blockquote>“…нэхэмжлэгч шаардах эрхээ хуульд заасан хугацаанд хэрэгжүүлээгүй.”</blockquote><div class="case-meta" style="margin-top:6px"><a href="#/case/c13">146/ШШ2025/00311</a> · 9 шийдвэрт</div></div>
+        <div class="alert conf" style="padding:10px 12px;font-size:13px"><span class="ic" style="color:var(--ai)">${sparkle}</span><div>Эсрэг тал “бэлэг байсан” гэж маргавал: ИХ 453-д бэлэглэлийн гэрээ байгуулах санаа зорилго нотлогдох шаардлагатайг дурдана уу.</div></div>
+      </div>
+    </div>`;
+  if(matchTab===3) return `
+    <div class="grid g2">
+      <div class="card pad"><h3 style="font-size:17px">Шүүх тус бүрээр хангагдсан хувь</h3><p class="muted" style="font-size:12.5px;margin:4px 0 12px">Зээлийн маргаан, 2022–2026 · босоо зураас = нийт дундаж 76%</p>
+        ${hbars([{l:"Сүхбаатар дүүрэг",v:82,n:34},{l:"Чингэлтэй дүүрэг",v:79,n:19},{l:"Баянзүрх дүүрэг",v:76,n:41},{l:"Баянгол дүүрэг",v:71,n:31},{l:"Хан-Уул дүүрэг",v:64,n:22}],{avg:76})}
+      </div>
+      <div class="card pad"><h3 style="font-size:17px">Шийдвэрлэсэн хугацаа</h3><p class="muted" style="font-size:12.5px;margin:4px 0 12px">Хэрэг хүлээн авснаас шийдвэр хүртэл, хоногоор · тод = медиан</p>
+        ${cols([6,21,38,35,22,13,12],["<30","30–60","60–90","90–120","120–150","150–180","180+"],{hl:3,unit:" хэрэг"})}
+      </div>
+      <div class="card pad" style="grid-column:1/-1"><h3 style="font-size:17px;margin-bottom:12px">Шатлал дамжих явц</h3>
+        <div class="flow">
+          <div class="st"><div class="v num">147</div><div class="l">Анхан шатны шийдвэр</div></div>
+          <div class="st"><div class="v num">56</div><div class="l">Давж заалдсан (38%)</div></div>
+          <div class="st"><div class="v num">6</div><div class="l">Давж заалдахаар өөрчлөгдсөн</div></div>
+          <div class="st"><div class="v num">14</div><div class="l">Хяналтад гомдол гаргасан</div></div>
+          <div class="st"><div class="v num">2</div><div class="l">Хяналтаар өөрчлөгдсөн</div></div>
+        </div>
+      </div>
+    </div>`;
+  return `
+    <div class="card pad steps">
+      <div class="row" style="justify-content:space-between;margin-bottom:6px"><h3 style="font-size:18px">Санал болгож буй дараагийн алхам</h3>${ai()}</div>
+      <div class="s"><span class="n">1</span><div><b>Банкны хуулга авах</b><div class="muted" style="font-size:13px">Гүйлгээний огноо, дүн, утгыг банкнаас албан ёсоор баталгаажуулна. 147 хэргийн 88%-д хавсаргасан.</div></div></div>
+      <div class="s"><span class="n">2</span><div><b>Мессежийг нотлох баримт болгох</b><div class="muted" style="font-size:13px">Дэлгэцийн зургийг нотариатаар гэрчлүүлэх, эсвэл утсыг шүүхэд үзүүлэх.</div></div></div>
+      <div class="s"><span class="n">3</span><div><b>Бичгээр шаардах хүсэлт хүргүүлэх</b><div class="muted" style="font-size:13px">Хугацаа тогтоосон шаардлага — хүүгийн эхлэх огноог тодорхой болгоно.</div></div></div>
+      <div class="s"><span class="n">4</span><div><b>Нэхэмжлэлийн төсөл</b><div class="muted" style="font-size:13px">ИХ 281.1, хувилбараар ИХ 492.1 — ижил хэргүүдийн амжилттай бүтцээр.</div><button class="btn sm ai" style="margin-top:8px" onclick="location.hash='#/folder'">${sparkle} Төсөл бичүүлэх</button></div></div>
+    </div>`;
+}
+function answer(el){ el.parentNode.querySelectorAll(".chip").forEach(c=>{c.style.background="";c.style.color=""}); el.style.background="var(--brand)"; el.style.color="var(--brand-ink)"; toast("Шинжилгээг шинэчиллээ"); }
+
+/* ----- SEARCH ----- */
+const F = {q:"",type:new Set(),cat:new Set(),level:new Set(),out:new Set(),judge:"",law:""};
+function pageSearch(){
+  const count=(key,val)=>CASES.filter(c=>c[key]===val).length*1873+ (val.length*37)%211;
+  const facet=(title,key,vals,labels)=>`<div class="facet"><h4>${title}</h4>${vals.map((v,i)=>`<label><input type="checkbox" ${F[key].has(v)?"checked":""} onchange="tog('${key}','${v}')">${labels?labels[i]:v}<span class="c">${fmt(count(key==="out"?"out":key,v))}</span></label>`).join("")}</div>`;
+  return `
+  <div class="wrap page-head fade-in">
+    <div class="crumbs"><a href="#/">Нүүр</a> / Хайлт</div>
+    <div class="searchbar">${ic('<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>')}<input id="q" value="${F.q}" placeholder="Утгаар хайх: “бичгээр гэрээгүй зээл нотлох”, шүүгч, зүйл заалт, хэргийн дугаар…" oninput="F.q=this.value;renderResults()"><span class="tag ai" style="margin-right:4px">${sparkle} Утгын хайлт</span></div>
+  </div>
+  <div class="wrap search-grid" style="margin-top:16px">
+    <aside class="card sticky">
+      <div class="facet row" style="justify-content:space-between"><b>Шүүлтүүр</b><a style="font-size:13px;color:var(--muted);cursor:pointer" onclick="clearF()">Цэвэрлэх</a></div>
+      ${facet("Хэргийн төрөл","type",TYPES)}
+      ${facet("Шүүхийн шат","level",LEVELS)}
+      ${facet("Маргааны төрөл","cat",CATS.slice(0,6))}
+      ${facet("Шийдвэрийн үр дүн","out",["full","part","dis"],["Бүрэн хангасан","Хэсэгчлэн хангасан","Хэрэгсэхгүй болгосон"])}
+      <div class="facet"><h4>Шүүгч</h4><select onchange="F.judge=this.value;renderResults()"><option value="">Бүх шүүгч</option>${[...new Set(CASES.map(c=>c.judge))].map(j=>`<option ${F.judge===j?"selected":""}>${j}</option>`).join("")}</select></div>
+      <div class="facet"><h4>Хэрэглэсэн хууль</h4><input type="text" placeholder="жишээ: ИХ 281" value="${F.law}" oninput="F.law=this.value;renderResults()"></div>
+      <div class="facet"><h4>Нэхэмжлэлийн дүн</h4><div class="range"><input type="text" placeholder="доод"><input type="text" placeholder="дээд"></div></div>
+      <div class="facet"><h4>Огноо</h4><div class="range"><input type="text" value="2020"><input type="text" value="2026"></div></div>
+    </aside>
+    <section style="min-width:0" id="results"></section>
+  </div>`;
+}
+function tog(k,v){ F[k].has(v)?F[k].delete(v):F[k].add(v); renderResults(); }
+function clearF(){ F.q="";F.judge="";F.law="";["type","cat","level","out"].forEach(k=>F[k].clear()); render(); }
+function renderResults(){
+  const q=F.q.toLowerCase();
+  const res=CASES.filter(c=>(!F.type.size||F.type.has(c.type))&&(!F.cat.size||F.cat.has(c.cat))&&(!F.level.size||F.level.has(c.level))&&(!F.out.size||F.out.has(c.out))&&(!F.judge||c.judge===F.judge)&&(!F.law||c.laws.join(" ").toLowerCase().includes(F.law.toLowerCase()))&&(!q||(c.sum+c.cat+c.no+c.judge+c.court+c.laws.join(" ")).toLowerCase().includes(q)));
+  const act=[...F.type,...F.level,...F.cat,...[...F.out].map(o=>OUT[o].l),F.judge,F.law].filter(Boolean);
+  const o={full:0,part:0,dis:0}; res.forEach(c=>o[c.out]++); const n=res.length||1;
+  $("#results").innerHTML=`
+    <div class="row" style="justify-content:space-between"><div><b class="num">${fmt(res.length*2317+res.length%7)}</b> <span class="muted">шийдвэр (жишээнд ${res.length} харуулав)</span></div>
+      <div class="row" style="gap:8px"><span class="muted" style="font-size:13px">Эрэмбэ</span><select style="border:1px solid var(--line);border-radius:8px;padding:5px 8px;background:var(--surface);font-size:13px"><option>Хамааралтай</option><option>Шинэ эхэндээ</option><option>Дүн</option></select>
+      <button class="btn sm" onclick="toast('CSV татаж байна…')">Экспорт</button></div></div>
+    ${act.length?`<div class="active-filters">${act.map(a=>`<span class="chip">${a}</span>`).join("")}</div>`:`<div style="height:14px"></div>`}
+    <div class="card pad" style="margin-bottom:16px">
+      <div class="row" style="justify-content:space-between;margin-bottom:10px"><span class="eyebrow">Энэ хайлтын үр дүнгийн хуваарилалт</span>${ai("Шууд тооцоолол")}</div>
+      ${stackBar([{v:Math.round(o.full/n*100),c:"--s1",l:"Бүрэн хангасан"},{v:Math.round(o.part/n*100),c:"--s3",l:"Хэсэгчлэн хангасан"},{v:Math.round(o.dis/n*100),c:"--s2",l:"Хэрэгсэхгүй болгосон"}])}
+      <div style="margin-top:10px">${legend([{c:"--s1",l:`Бүрэн ${Math.round(o.full/n*100)}%`},{c:"--s3",l:`Хэсэгчлэн ${Math.round(o.part/n*100)}%`},{c:"--s2",l:`Хэрэгсэхгүй ${Math.round(o.dis/n*100)}%`}])}</div>
+    </div>
+    <div class="card">${res.length?res.map(c=>`<div class="result" onclick="location.hash='#/case/${c.id}'">
+      <div class="row" style="gap:8px"><span class="tag neu">${c.type}</span><span class="tag neu">${c.cat}</span>${outTag(c)}<span class="sp"></span><span class="muted mono">${c.no}</span></div>
+      <div class="case-title" style="margin-top:8px">${c.court}</div>
+      <div class="case-meta"><span>${c.date}</span><span>${c.level}</span><span>Шүүгч ${c.judge}</span><span>${c.parties}</span>${c.claim?`<span>${money(c.claim)}</span>`:""}</div>
+      <div class="sum">${sparkle} ${c.sum}</div>
+      <div class="row" style="gap:6px">${c.laws.map(lawChip).join("")}</div></div>`).join(""):`<div class="pad muted" style="text-align:center;padding:48px">Илэрц олдсонгүй. Шүүлтүүрээ багасгана уу.</div>`}</div>`;
+}
+
+/* ----- CASE ----- */
+let chatLog=[];
+function pageCase(id){
+  const c=CASES.find(x=>x.id===id)||CASES[0];
+  const sim=CASES.filter(x=>x.sim&&x.id!==c.id&&x.cat===c.cat).slice(0,3);
+  return `
+  <div class="wrap page-head fade-in">
+    <div class="crumbs"><a href="#/">Нүүр</a> / <a href="#/search">Хайлт</a> / <span class="mono">${c.no}</span></div>
+    <div class="row"><h1 style="font-size:26px">${c.cat} — ${c.parties}</h1></div>
+    <div class="row" style="margin-top:10px;gap:8px">${outTag(c)}<span class="tag neu">${c.type}</span><span class="tag neu">${c.level}</span><span class="muted" style="font-size:13px">${c.court} · ${c.date} · Шүүгч <a href="#/judge" style="text-decoration:underline">${c.judge}</a></span>
+      <span class="sp"></span><button class="btn sm" onclick="toast('Хавтсанд нэмлээ')">Хавтсанд нэмэх</button><button class="btn sm">PDF</button><a class="btn sm" href="#/search">shuukh.mn ↗</a></div>
+  </div>
+  <div class="wrap case-grid" style="margin-top:16px">
+    <article class="card doc">
+      <div class="row" style="justify-content:center;gap:14px;font-family:Inter;font-size:12px;margin-bottom:24px;flex-wrap:wrap">
+        <span class="row" style="gap:5px"><i style="width:10px;height:10px;border-radius:2px;background:color-mix(in srgb,var(--s1) 30%,transparent)"></i>Баримт</span>
+        <span class="row" style="gap:5px"><i style="width:10px;height:10px;border-radius:2px;background:var(--accent-soft);outline:1px solid var(--line)"></i>Шүүхийн дүгнэлт</span>
+        <span class="row" style="gap:5px"><i style="width:10px;height:10px;border-radius:2px;background:var(--brand-soft);outline:1px solid var(--line)"></i>Хууль хэрэглээ</span></div>
+      <h2>${c.level==="Анхан шат"?"Шүүхийн шийдвэр":c.level==="Хяналтын шат"?"Хяналтын шатны шүүхийн тогтоол":"Давж заалдах шатны шүүхийн магадлал"}</h2>
+      <div style="text-align:center;font-family:Inter;font-size:13px;color:var(--muted)">${c.date} · Улаанбаатар хот · Дугаар <span class="mono">${c.no}</span></div>
+      <div class="sec">Тодорхойлох хэсэг</div>
+      <p>${c.court}ийн шүүгч ${c.judge} даргалж, шүүх хуралдааны нарийн бичгийн дарга оролцуулан, шүүх хуралдааны танхимд нээлттэй хийсэн шүүх хуралдаанаар нэхэмжлэгч ${c.parties.split("—")[0].trim()}-ийн нэхэмжлэлтэй, хариуцагч ${c.parties.split("—")[1].trim()}-д холбогдох ${c.cat.toLowerCase()}ийн маргаантай иргэний хэргийг хянан хэлэлцэв.</p>
+      <div class="sec">Үндэслэх хэсэг</div>
+      <p>Нэхэмжлэгч шүүхэд гаргасан нэхэмжлэлдээ: <span class="hl-fact">“2023 оны 5 дугаар сарын 12-ны өдөр хариуцагчид ${c.claim?mln(c.claim):"мөнгө"}-ийг Хаан банкны дансаар шилжүүлсэн. Бид бичгээр гэрээ байгуулаагүй боловч хариуцагч 2023 оны 8 дугаар сард багтаан буцааж өгөхөө амаар болон мессежээр амласан”</span> гэжээ.</p>
+      <p>Хариуцагч шүүхэд гаргасан тайлбартаа: “Мөнгө авсан нь үнэн боловч энэ нь бидний хамтын ажиллагааны хүрээнд байсан” гэж маргажээ.</p>
+      <p><span class="hl-reason">Шүүх хэргийн оролцогчдын тайлбар, хэрэгт авагдсан нотлох баримтуудыг үнэлээд дараах дүгнэлтэд хүрэв. Хариуцагчийн 2023 оны 9 дүгээр сарын 3-ны өдрийн “сар бүр хэсэгчлэн өгье” гэсэн мессеж нь мөнгийг буцаан өгөх үүргээ хүлээн зөвшөөрсөн утгатай байна.</span> <span class="hl-law">Иргэний хуулийн 281 дүгээр зүйлийн 281.1-д зааснаар зээлдүүлэгч нь мөнгө буюу төрлийн шинжээр тодорхойлогдох бусад эд хөрөнгийг зээлдэгчийн өмчлөлд шилжүүлэх</span>, зээлдэгч нь зээлсэнтэй ижил төрөл, чанар, тоо хэмжээ бүхий эд хөрөнгийг буцаан өгөх үүргийг хүлээнэ.</p>
+      <p><span class="hl-reason">Хариуцагч “хамтын ажиллагаа” байсан гэх тайлбараа Иргэний хэрэг шүүхэд хянан шийдвэрлэх тухай хуулийн 38.1-д заасны дагуу нотлох баримтаар нотлоогүй</span> тул шүүх хүлээн авах үндэслэлгүй гэж үзэв.</p>
+      <div class="sec">Тогтоох хэсэг</div>
+      <p>1. <span class="hl-law">Иргэний хуулийн 281 дүгээр зүйлийн 281.1</span>-д зааснаар хариуцагчаас ${money(c.award||c.claim)}-ийг гаргуулж нэхэмжлэгчид олгосугай.</p>
+      <p>2. Шийдвэрийг эс зөвшөөрвөл танилцуулснаас хойш 14 хоногийн дотор давж заалдах гомдол гаргах эрхтэй.</p>
+      <p class="muted" style="font-family:Inter;font-size:12.5px;margin-top:24px">— Жишээ бичвэр. Бодит системд эх шийдвэрийн бүрэн текст энд харагдана.</p>
+    </article>
+
+    <aside class="grid sticky" style="gap:16px">
+      <div class="card pad ai-panel">
+        <div class="row" style="justify-content:space-between;margin-bottom:10px">${ai("30 секундийн хураангуй")}<span class="muted" style="font-size:12px">3 мин уншина</span></div>
+        <div style="font-size:14px" class="ink2">${c.sum}</div>
+        <div class="hr"></div>
+        <div class="fact"><span class="k">Шаардлага</span><span class="v num">${money(c.claim)}</span></div>
+        <div class="fact"><span class="k">Хангасан</span><span class="v num">${money(c.award)}</span></div>
+        <div class="fact"><span class="k">Шийдвэрлэсэн хугацаа</span><span class="v">${c.days?c.days+" хоног":"—"}</span></div>
+        <div class="fact"><span class="k">Гол асуудал</span><span class="v">Бичгээр бус зээлийн нотолгоо</span></div>
+        <div class="eyebrow" style="margin:14px 0 8px">Хэрэглэсэн хууль</div>
+        <div class="row" style="gap:6px">${c.laws.map(lawChip).join("")}</div>
+      </div>
+      <div class="card pad">
+        <div class="eyebrow" style="margin-bottom:12px">Шатлалын түүх</div>
+        <div class="chain">
+          <div class="n cur"><span class="b">1</span><div><b style="font-size:14px">Анхан шат</b><div class="muted" style="font-size:12.5px">${c.date} · ${OUT[c.out].l}</div></div></div>
+          <div class="n"><span class="b">2</span><div><b style="font-size:14px">Давж заалдах шат</b><div class="muted" style="font-size:12.5px">2025-06-02 · Хэвээр үлдээсэн</div></div></div>
+          <div class="n"><span class="b" style="border-style:dashed">3</span><div><b style="font-size:14px" class="muted">Хяналтын шат</b><div class="muted" style="font-size:12.5px">Гомдол гаргаагүй</div></div></div>
+        </div>
+      </div>
+      <div class="card pad">
+        <div class="row" style="justify-content:space-between;margin-bottom:10px">${ai("Шийдвэрээс асуух")}</div>
+        <div class="chat" id="chat">${chatHTML()}</div>
+        <div class="row" style="gap:6px;margin-top:10px">${["Шүүх юуг нотлох баримт гэж үзсэн бэ?","Хүүг яагаад хангасангүй?","Миний хэрэгтэй юугаараа ялгаатай вэ?"].map(q=>`<span class="chip click" style="white-space:normal" onclick="ask('${q}')">${q}</span>`).join("")}</div>
+        <div class="chat-in"><input id="chatIn" placeholder="Асуултаа бичнэ үү…" onkeydown="if(event.key==='Enter')ask(this.value)"><button class="btn sm primary" onclick="ask($('#chatIn').value)">Илгээх</button></div>
+      </div>
+      ${sim.length?`<div class="card"><div class="card-h"><h3 style="font-size:15px">Төстэй шийдвэрүүд</h3></div>${sim.map(s=>`<a class="list-item" href="#/case/${s.id}"><div class="sim" style="--p:${s.sim};width:42px;height:42px;flex:none"><span style="font-size:11px">${s.sim}%</span></div><div style="min-width:0"><div style="font-size:13.5px;font-weight:600">${s.cs} ${outTag(s)}</div><div class="muted mono" style="font-size:11.5px">${s.no}</div></div></a>`).join("")}</div>`:""}
+    </aside>
+  </div>`;
+}
+function chatHTML(){ return chatLog.length?chatLog.map(m=>`<div class="msg ${m.me?"me":"bot"}">${m.t}${m.cite?`<cite>Эх сурвалж: ${m.cite}</cite>`:""}</div>`).join(""):`<div class="muted" style="font-size:13px">Энэ шийдвэрийн талаар юу ч асуугаарай — хариулт бүр эх бичвэрийн ишлэлтэй.</div>`; }
+function ask(q){
+  if(!q||!q.trim()) return;
+  chatLog.push({me:1,t:q});
+  const a = /нотлох/.test(q)?{t:"Шүүх (1) банкны гүйлгээний баримт, (2) хариуцагчийн 2023.09.03-ны мессежийг зээлийн харилцааг нотолсон гэж үзсэн. Хариуцагчийн “хамтын ажиллагаа” гэсэн тайлбарыг нотлоогүй тул хүлээн аваагүй.",cite:"Үндэслэх хэсэг, 3–4-р догол мөр"}
+    : /хүү/i.test(q)?{t:"Энэ шийдвэрт хүүгийн шаардлага гаргаагүй. Ижил төрлийн хэргүүдэд хүүг бичгээр тохиролцоогүй бол ИХ 281.3-ын дагуу ихэнхдээ хангадаггүй (31 хэргийн 24-т).",cite:"Холбоотой 31 шийдвэрийн дүн шинжилгээ"}
+    : {t:"Таны хэрэгтэй адил: бичгээр гэрээгүй, банкны гүйлгээтэй, мессежээр хүлээн зөвшөөрсөн. Ялгаа: энэ хэрэгт хариуцагч шүүхэд ирж маргасан; таны хэрэгт хариуцагч холбоо тасалсан тул эзгүйд шийдвэрлэх (ИХШХШТХ 100) боломжийг анхаарна уу.",cite:"Таны хэргийн мэдээлэл + Тодорхойлох хэсэг"};
+  chatLog.push({t:`<span class="skeleton">Уншиж байна…</span>`});
+  $("#chat").innerHTML=chatHTML(); const i=$("#chatIn"); if(i) i.value="";
+  setTimeout(()=>{chatLog.pop();chatLog.push(a);$("#chat").innerHTML=chatHTML();},700);
+}
+
+/* ----- JUDGE ----- */
+function pageJudge(){
+  const months=["25.01","02","03","04","05","06","07","08","09","10","11","12","26.01","02","03","04","05","06","07","08"];
+  return `
+  <div class="wrap page-head fade-in">
+    <div class="crumbs"><a href="#/">Нүүр</a> / Шүүгч</div>
+    <div class="profile"><div class="pic">БЭ</div><div><h1>Б.Энхтуяа</h1><div class="ink2" style="font-size:14px">Сүхбаатар дүүргийн Иргэний хэргийн анхан шатны шүүхийн шүүгч · 2014 оноос</div>
+      <div class="row" style="gap:6px;margin-top:8px"><span class="chip">Гэрээний маргаан</span><span class="chip">Зээл</span><span class="chip">Түрээс</span></div></div></div>
+  </div>
+  <div class="wrap grid" style="gap:20px;margin-top:20px">
+    <div class="grid g4">
+      <div class="card pad stat"><div class="v num">2,184</div><div class="l">Нийт шийдвэр</div><div class="d">2014–2026</div></div>
+      <div class="card pad stat"><div class="v num">71 хоног</div><div class="l">Дундаж шийдвэрлэх хугацаа</div><div class="d"><span class="up">▼ 23</span> хоногоор шүүхийн дунджаас богино</div></div>
+      <div class="card pad stat"><div class="v num">7.4%</div><div class="l">Давж заалдахаар өөрчлөгдсөн</div><div class="d">Шүүхийн дундаж 10.9%</div></div>
+      <div class="card pad stat"><div class="v num">81%</div><div class="l">Зээлийн хэргийг нэхэмжлэгчийн талд</div><div class="d">Шүүхийн дундаж 76%</div></div>
+    </div>
+    <div class="grid g2">
+      <div class="card pad"><h3 style="font-size:17px">Маргааны төрлөөр хангасан хувь</h3><p class="muted" style="font-size:12.5px;margin:4px 0 12px">Бүрэн + хэсэгчлэн · босоо зураас = шүүхийн дундаж</p>
+        ${[["Зээлийн гэрээ",81,76,412],["Түрээсийн гэрээ",77,73,188],["Худалдах, худалдан авах",58,61,143],["Хөдөлмөрийн маргаан",52,57,96],["Гэм хор",49,55,71]].map(r=>`<div style="margin-bottom:4px">${hbars([{l:r[0],v:r[1],n:r[3]}],{avg:r[2]})}</div>`).join("")}
+      </div>
+      <div class="card pad"><h3 style="font-size:17px">Сарын шийдвэрийн тоо</h3><p class="muted" style="font-size:12.5px;margin:4px 0 12px">Сүүлийн 20 сар</p>
+        ${lineChart(months,[{name:"Шийдвэр",c:"--s1",vals:[14,18,21,17,19,16,9,12,20,22,19,17,15,19,24,21,20,18,11,16]}],{h:220})}
+      </div>
+    </div>
+    <div class="grid g2">
+      <div class="card pad ai-panel"><div class="row" style="justify-content:space-between;margin-bottom:8px"><h3 style="font-size:17px">Шүүгчийн хандлага</h3>${ai()}</div>
+        <ul style="margin:0;padding-left:18px;font-size:14px;line-height:1.75" class="ink2">
+          <li>Мессеж, цахим захидал харилцааг <b style="color:var(--ink)">нотлох баримтаар өргөн хүлээн авдаг</b> (зээлийн хэргийн 64%-д шийдвэрийн үндэслэлд дурдсан).</li>
+          <li>Алдангийн шаардлагыг ихэвчлэн <b style="color:var(--ink)">ИХ 232.6-гийн дагуу бууруулдаг</b> — дунджаар шаардсан дүнгийн 42%.</li>
+          <li>Хүүгийн шаардлагыг бичгээр тохиролцоогүй бол хангадаггүй (38/38).</li>
+          <li>Эвлэрлээр шийдвэрлэсэн хувь өндөр — 19% (шүүхийн дундаж 12%).</li>
+        </ul>
+        <p class="muted" style="font-size:12px;margin:12px 0 0">Статистик хандлага нь шүүгчийн бие даасан байдлыг үнэлэх зорилгогүй; зөвхөн мэдээллийн зорилготой.</p>
+      </div>
+      <div class="card"><div class="card-h"><h3 style="font-size:17px">Хамгийн их хэрэглэсэн заалт</h3></div>
+        <div class="tbl-wrap"><table class="t"><thead><tr><th>Заалт</th><th>Хууль</th><th style="text-align:right">Шийдвэр</th></tr></thead><tbody>
+        ${[["ИХ 281.1","Зээлийн гэрээ",388],["ИХШХШТХ 38.1","Нотлох үүрэг",351],["ИХ 232.6","Алданги",204],["ИХ 318.1","Түрээсийн гэрээ",171],["ИХ 243.1","Худалдах, худалдан авах",122]].map(r=>`<tr><td>${lawChip(r[0])}</td><td>${r[1]}</td><td style="text-align:right">${r[2]}</td></tr>`).join("")}
+        </tbody></table></div></div>
+    </div>
+    <div class="card"><div class="card-h"><h3 style="font-size:17px">Сүүлийн шийдвэрүүд</h3><a class="btn sm" href="#/search">Бүгд</a></div>
+      ${CASES.filter(c=>c.judge==="Б.Энхтуяа").map(c=>`<a class="list-item" href="#/case/${c.id}"><div style="flex:1;min-width:0"><div class="row" style="gap:8px"><span class="tag neu">${c.cat}</span>${outTag(c)}<span class="muted mono" style="font-size:12px">${c.no}</span></div><div class="ink2" style="font-size:14px;margin-top:6px">${c.sum.replace(/<\/?mark>/g,"")}</div></div></a>`).join("")}
+    </div>
+  </div>`;
+}
+
+/* ----- LAW ----- */
+function pageLaw(){
+  const yrs=["2018","2019","2020","2021","2022","2023","2024","2025","2026*"];
+  return `
+  <div class="wrap page-head fade-in">
+    <div class="crumbs"><a href="#/">Нүүр</a> / Хууль / Иргэний хууль</div>
+    <div class="row"><span class="law" style="font-size:14px;padding:4px 10px">ИХ 281.1</span><h1>Зээлийн гэрээ</h1></div>
+    <p class="ink2" style="max-width:820px;font-family:'Source Serif 4',serif;font-size:17px;margin:12px 0 0">“Зээлийн гэрээгээр зээлдүүлэгч нь мөнгө буюу төрлийн шинжээр тодорхойлогдох бусад эд хөрөнгийг зээлдэгчийн өмчлөлд шилжүүлэх, зээлдэгч нь зээлсэнтэй ижил төрөл, чанар, тоо хэмжээ бүхий эд хөрөнгийг буцаан өгөх үүргийг тус тус хүлээнэ.”</p>
+  </div>
+  <div class="wrap grid" style="gap:20px;margin-top:20px">
+    <div class="grid g4">
+      <div class="card pad stat"><div class="v num">48,912</div><div class="l">Энэ заалтыг хэрэглэсэн шийдвэр</div></div>
+      <div class="card pad stat"><div class="v num">74%</div><div class="l">Нэхэмжлэгчийн талд</div></div>
+      <div class="card pad stat"><div class="v num">3</div><div class="l">Хяналтын шатны чиглүүлэх тогтоол</div></div>
+      <div class="card pad stat"><div class="v num" style="color:var(--accent)">2</div><div class="l">Илэрсэн зөрүүтэй тайлбар</div></div>
+    </div>
+    <div class="grid g2">
+      <div class="card pad"><h3 style="font-size:17px">Жил бүр хэрэглэсэн шийдвэрийн тоо</h3><p class="muted" style="font-size:12.5px;margin:4px 0 12px">* 2026 оны 8 сарын байдлаар</p>
+        ${cols([3120,3480,3950,4870,5610,6230,7140,7880,6632],yrs,{unit:" шийдвэр"})}</div>
+      <div class="card pad"><h3 style="font-size:17px">Хамт хэрэглэгддэг заалт</h3><p class="muted" style="font-size:12.5px;margin:4px 0 12px">281.1-тэй хамт иш татсан хувь</p>
+        ${hbars([{l:"ИХШХШТХ 38.1",v:71},{l:"ИХ 232.6 (алданги)",v:44},{l:"ИХ 281.3 (хүү)",v:39},{l:"ИХ 75.2.1 (хугацаа)",v:12},{l:"ИХ 492.1 (хөрөнгөжих)",v:7}],{max:80})}</div>
+    </div>
+    <div class="card pad ai-panel">
+      <div class="row" style="justify-content:space-between;margin-bottom:6px"><h3 style="font-size:18px">Шүүхүүд энэ заалтыг хэрхэн тайлбарладаг вэ</h3>${ai("Тайлбарын бүлэглэл")}</div>
+      <p class="ink2" style="font-size:13.5px;margin:0 0 14px">AI 48,912 шийдвэрийн үндэслэх хэсгийг уншиж, давтагддаг тайлбаруудыг бүлэглэсэн.</p>
+      <div class="grid g3">
+        <div class="cluster"><div class="pct">58%</div><b>Бичгийн хэлбэр заавал биш</b><p class="ink2" style="font-size:13px;margin:6px 0 0">Банкны гүйлгээ, захидал харилцаа, гэрчээр зээлийн харилцаа тогтоогдоно.</p><div class="case-meta" style="margin-top:8px">Жишиг: <a href="#/case/c4" style="text-decoration:underline">001/ХТ2024/00412</a></div></div>
+        <div class="cluster"><div class="pct">27%</div><b>Хүүг зөвхөн бичгээр тохиролцсон бол</b><p class="ink2" style="font-size:13px;margin:6px 0 0">Амаар тохирсон хүүг нотлогдоогүй гэж үзэх хандлага.</p><div class="case-meta" style="margin-top:8px">Жишиг: <a href="#/case/c2" style="text-decoration:underline">183/ШШ2024/04410</a></div></div>
+        <div class="cluster"><div class="pct">15%</div><b>Шилжүүлгийн зорилгыг нэхэмжлэгч нотлох</b><p class="ink2" style="font-size:13px;margin:6px 0 0">Утгагүй шилжүүлгийг дангаар нь зээл гэж үзэхгүй.</p><div class="case-meta" style="margin-top:8px">Жишиг: <a href="#/case/c3" style="text-decoration:underline">180/ШШ2024/02931</a></div></div>
+      </div>
+    </div>
+    <div class="card pad">
+      <div class="row" style="justify-content:space-between;margin-bottom:12px"><div class="row" style="gap:8px"><span style="color:var(--accent);font-size:18px">⚠</span><h3 style="font-size:18px">Зөрүүтэй практик: “утгагүй шилжүүлэг”</h3></div><span class="tag neu">20 шийдвэр</span></div>
+      <div class="conflict">
+        <div class="side"><span class="tag full">14 шийдвэр</span><div style="margin:8px 0 4px;font-weight:600">Зээлийн гэрээ (ИХ 281.1)</div><blockquote style="margin:0;font-family:'Source Serif 4',serif;color:var(--ink-2)">“…буцаан өгөх тухай харилцан тохиролцоо бусад баримтаар тогтоогдсон тул зээл гэж үзнэ.”</blockquote></div>
+        <div class="vs">vs</div>
+        <div class="side"><span class="tag dis">6 шийдвэр</span><div style="margin:8px 0 4px;font-weight:600">Үндэслэлгүй хөрөнгөжих (ИХ 492.1)</div><blockquote style="margin:0;font-family:'Source Serif 4',serif;color:var(--ink-2)">“…зээлийн гэрээ байгуулагдсан нь тогтоогдохгүй ч хариуцагч хуульд заасан үндэслэлгүйгээр эд хөрөнгө олж авсан.”</blockquote></div>
+      </div>
+      <div class="alert conf" style="margin-top:14px"><span class="ic" style="color:var(--ai)">${sparkle}</span><div>Хяналтын шатны шүүх энэ асуудлаар одоогоор нэгдсэн тайлбар гаргаагүй. Нэхэмжлэлдээ хоёр үндэслэлийг хувилбараар дурдах нь эрсдэлийг бууруулна.</div></div>
+    </div>
+  </div>`;
+}
+
+/* ----- TRENDS ----- */
+function pageTrends(){
+  const yrs=["2018","2019","2020","2021","2022","2023","2024","2025"];
+  return `
+  <div class="wrap page-head fade-in">
+    <div class="crumbs"><a href="#/">Нүүр</a> / Тойм</div>
+    <div class="row"><h1>Шүүхийн практикийн тойм</h1><span class="sp"></span>
+      <div class="row" style="gap:6px">${["1 жил","3 жил","Бүгд"].map((t,i)=>`<button class="btn sm" style="${i===2?"background:var(--brand);color:var(--brand-ink);border-color:var(--brand)":""}">${t}</button>`).join("")}</div></div>
+  </div>
+  <div class="wrap grid" style="gap:20px;margin-top:20px">
+    <div class="grid g4">
+      <div class="card pad stat"><div class="v num">412,380</div><div class="l">Нийт шийдвэр</div></div>
+      <div class="card pad stat"><div class="v num">46,210</div><div class="l">2025 онд</div><div class="d"><span class="up">▲ 7.8%</span> 2024-өөс</div></div>
+      <div class="card pad stat"><div class="v num">96 хоног</div><div class="l">Иргэний хэргийн дундаж хугацаа</div></div>
+      <div class="card pad stat"><div class="v num">10.9%</div><div class="l">Давж заалдахаар өөрчлөгдсөн</div></div>
+    </div>
+    <div class="grid g2">
+      <div class="card pad"><h3 style="font-size:17px">Хэргийн төрлөөр, жил бүр</h3><p class="muted" style="font-size:12.5px;margin:4px 0 8px">Шийдвэрийн тоо</p>
+        ${legend([{c:"--s1",l:"Иргэний"},{c:"--s2",l:"Эрүүгийн"},{c:"--s3",l:"Захиргааны"}])}
+        <div style="margin-top:8px">${lineChart(yrs,[{name:"Иргэний",c:"--s1",vals:[24100,25400,22800,26900,29300,31200,33500,36100]},{name:"Эрүүгийн",c:"--s2",vals:[8900,9300,8100,8700,8400,8900,9100,8700],dy:-4},{name:"Захиргааны",c:"--s3",vals:[900,1100,1300,1400,1500,1500,1700,1410],dy:8}],{h:250,yfmt:v=>v>=1000?(v/1000)+"k":v})}</div></div>
+      <div class="card pad"><h3 style="font-size:17px">Маргааны төрөл × он</h3><p class="muted" style="font-size:12.5px;margin:4px 0 12px">Иргэний хэргийн шийдвэрийн тоо · бараан = их</p>
+        ${heatmap(["Зээлийн гэрээ","Хөдөлмөр","Гэр бүл","Түрээс","Гэм хор","Худалдах"],["2020","2021","2022","2023","2024","2025"],[[8200,9800,11200,12600,13900,14800],[2100,2300,2600,2900,3300,3900],[3900,4100,4200,4400,4300,4500],[1500,1700,1900,2300,2600,2900],[1200,1300,1400,1400,1500,1600],[1800,1900,2100,2000,2200,2300]])}</div>
+    </div>
+    <div class="grid g2">
+      <div class="card pad"><h3 style="font-size:17px">Анхан шатны шүүхүүдийн ачаалал</h3><p class="muted" style="font-size:12.5px;margin:4px 0 12px">Шүүгч бүрт ногдох жилийн шийдвэр, 2025</p>
+        ${hbars([{l:"Баянзүрх дүүрэг",v:412},{l:"Сонгинохайрхан дүүрэг",v:388},{l:"Сүхбаатар дүүрэг",v:341},{l:"Баянгол дүүрэг",v:326},{l:"Хан-Уул дүүрэг",v:298},{l:"Дархан-Уул аймаг",v:214}],{max:450,suffix:""})}</div>
+      <div class="card pad ai-panel"><div class="row" style="justify-content:space-between;margin-bottom:8px"><h3 style="font-size:17px">AI ажиглалт</h3>${ai()}</div>
+        <div class="steps">
+          <div class="s"><span class="n" style="background:var(--ai);color:#fff">1</span><div><b>Цахим зээлийн апп-тай холбоотой маргаан 2 жилд 3 дахин өссөн.</b><div class="muted" style="font-size:13px">Ихэнх нь алдангийн хэмжээг ИХ 232.6-аар бууруулсан.</div></div></div>
+          <div class="s"><span class="n" style="background:var(--ai);color:#fff">2</span><div><b>Хөдөлмөрийн шинэ хууль (2022) хэрэгжсэнээс хойш ажилд эгүүлэн тогтоох шийдвэр 18%-иар өссөн.</b></div></div>
+          <div class="s"><span class="n" style="background:var(--ai);color:#fff">3</span><div><b>Захиргааны хэрэгт “сонсох ажиллагаа” зөрчсөн үндэслэлээр акт хүчингүй болох нь нэмэгдэж байна.</b></div></div>
+        </div></div>
+    </div>
+  </div>`;
+}
+
+/* ----- FOLDER ----- */
+function pageFolder(){
+  return `
+  <div class="wrap page-head fade-in">
+    <div class="crumbs"><a href="#/">Нүүр</a> / Хавтас</div>
+    <div class="row"><h1>Хавтас: Д.Б-ийн зээлийн маргаан</h1><span class="sp"></span><button class="btn sm">Хамт ажиллагч урих</button><button class="btn sm primary" onclick="toast('DOCX татаж байна…')">DOCX татах</button></div>
+  </div>
+  <div class="wrap case-grid" style="margin-top:16px">
+    <div class="card pad">
+      <div class="tabs" style="margin:-4px 0 16px">${["Нэхэмжлэлийн төсөл","Хуулийн дүгнэлт (memo)","Тэмдэглэл"].map((t,i)=>`<button class="${i===0?"on":""}">${t}</button>`).join("")}</div>
+      <div class="row" style="justify-content:space-between;margin-bottom:10px">${ai("Ижил 147 хэргийн амжилттай бүтцээр үүсгэсэн")}<button class="btn sm">Дахин үүсгэх</button></div>
+      <div class="note-area" contenteditable="true">
+<b>НЭХЭМЖЛЭЛ</b><br><br>
+Нэхэмжлэгч: Д.Б, РД: ……, хаяг: ……<br>
+Хариуцагч: Г.Т, РД: ……, хаяг: ……<br>
+Нэхэмжлэлийн шаардлага: 15,000,000 төгрөг гаргуулах<br><br>
+<b>Үндэслэл:</b> Би 2023 оны 12 дугаар сарын …-ны өдөр хариуцагчид 15,000,000 төгрөгийг ……… банкны дансаар шилжүүлсэн (Хавсралт 1). Хариуцагч мөнгийг буцаан өгөхөө 20… оны … сарын …-ны өдрийн мессежээр хүлээн зөвшөөрсөн (Хавсралт 2).<br><br>
+Талуудын хооронд бичгээр гэрээ байгуулаагүй боловч Иргэний хуулийн 281 дүгээр зүйлийн 281.1-д заасан зээлийн харилцаа үүссэн нь дээрх баримтаар тогтоогдож байна. <span style="background:var(--ai-soft)">Улсын Дээд шүүхийн 001/ХТ2024/00412 дугаар тогтоолд бичгээр хийгээгүй зээлийн гэрээг бусад нотлох баримтаар тогтоож болохыг тайлбарласан.</span><br><br>
+<span style="background:var(--ai-soft)">Хэрэв шүүх зээлийн гэрээ байгуулагдсан гэж үзэхгүй бол хувилбараар Иргэний хуулийн 492.1-д зааснаар үндэслэлгүйгээр олж авсан хөрөнгийг буцаан гаргуулахыг хүсье.</span><br><br>
+Иймд хариуцагчаас 15,000,000 төгрөг гаргуулж өгнө үү.
+      </div>
+    </div>
+    <aside class="grid sticky" style="gap:16px">
+      <div class="card"><div class="card-h"><h3 style="font-size:15px">Хадгалсан шийдвэрүүд</h3><span class="muted" style="font-size:13px">4</span></div>
+        ${["c4","c1","c2","c3"].map(id=>{const c=CASES.find(x=>x.id===id);return `<a class="list-item" href="#/case/${c.id}"><div style="min-width:0"><div class="row" style="gap:6px">${outTag(c)}</div><div class="muted mono" style="font-size:11.5px;margin-top:4px">${c.no}</div></div></a>`}).join("")}</div>
+      <div class="card pad"><div class="eyebrow" style="margin-bottom:10px">Нотлох баримт</div>
+        <div class="ev"><span class="dot y">✓</span>Банкны хуулга.pdf</div>
+        <div class="ev"><span class="dot y">✓</span>Мессеж_дэлгэц.png</div>
+        <div class="ev"><span class="dot q">+</span><span class="muted">Файл нэмэх</span></div></div>
+      <div class="card pad"><div class="eyebrow" style="margin-bottom:10px">Хугацааны сануулга</div>
+        <div class="fact"><span class="k">Хөөн хэлэлцэх хугацаа</span><span class="v">2027.06</span></div>
+        <div class="fact"><span class="k">Шаардлага хүргүүлэх</span><span class="v">2026.10.05</span></div></div>
+    </aside>
+  </div>`;
+}
+
+/* =====================================================================
+   ROUTER / UI
+   ===================================================================== */
+function render(keepScroll){
+  const h=location.hash.replace(/^#\/?/,""); const [r,arg]=h.split("/");
+  document.querySelectorAll("#nav a").forEach(a=>a.classList.toggle("on",a.dataset.r===(r==="case"?"search":r)));
+  const app=$("#app"); const y=scrollY;
+  const pages={"":pageHome,match:pageMatch,search:pageSearch,case:()=>pageCase(arg),judge:pageJudge,law:pageLaw,trends:pageTrends,folder:pageFolder};
+  app.innerHTML=(pages[r]||pageHome)()+`<footer><div class="wrap row" style="justify-content:space-between"><span>Жишиг · Эх сурвалж: shuukh.mn нээлттэй шийдвэрүүд</span><span>Хууль зүйн зөвлөгөө биш — мэргэжлийн хуульчтай зөвлөлдөнө үү.</span></div></footer>`;
+  if(r==="search") renderResults();
+  if(keepScroll) scrollTo(0,y); else scrollTo(0,0);
+}
+function toast(t){ const el=document.createElement("div"); el.textContent=t; el.style.cssText="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:14px;z-index:100;box-shadow:0 8px 24px rgba(0,0,0,.2)"; document.body.appendChild(el); setTimeout(()=>el.remove(),1800); }
+window.addEventListener("hashchange",()=>{chatLog=[];render()});
+document.addEventListener("keydown",e=>{ if(e.key==="/"&&!/INPUT|TEXTAREA/.test(document.activeElement.tagName)&&!document.activeElement.isContentEditable){e.preventDefault();location.hash="#/search";setTimeout(()=>$("#q")?.focus(),50)} });
+$("#themeBtn").onclick=()=>{ const d=document.documentElement; const dark=d.dataset.theme?d.dataset.theme==="dark":matchMedia("(prefers-color-scheme: dark)").matches; d.dataset.theme=dark?"light":"dark"; try{localStorage.setItem("theme",d.dataset.theme)}catch(e){} };
+try{const t=localStorage.getItem("theme"); if(t) document.documentElement.dataset.theme=t;}catch(e){}
+// tooltip
+const tip=$("#tip");
+document.addEventListener("mousemove",e=>{ const t=e.target.closest&&e.target.closest("[data-tip]"); if(!t){tip.style.opacity=0;return}
+  tip.innerHTML=t.getAttribute("data-tip"); tip.style.opacity=1;
+  const w=tip.offsetWidth, x=Math.min(innerWidth-w-8,e.clientX+14); tip.style.left=x+"px"; tip.style.top=(e.clientY+16)+"px"; });
+render();
+</script>
+</body>
+</html>
