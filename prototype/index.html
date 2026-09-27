@@ -289,6 +289,11 @@ table.t tr:last-child td{border-bottom:0}
 @keyframes pulse{50%{opacity:.45}}
 .fade-in{animation:fi .35s ease both}
 @keyframes fi{from{opacity:0;transform:translateY(6px)}}
+
+.issue{padding:16px 20px;border-bottom:1px solid var(--line-2)}
+.issue:last-child{border-bottom:0}
+.issue .n{width:26px;height:26px;border-radius:50%;background:var(--brand);color:var(--brand-ink);display:grid;place-items:center;font-size:12px;font-weight:700;flex:none;margin-top:1px}
+.qcard p{margin:6px 0 0}
 footer{border-top:1px solid var(--line);margin-top:40px;padding:24px 0;font-size:13px;color:var(--muted)}
 
 /* ---------- Responsive ---------- */
@@ -391,6 +396,141 @@ const CASES = [
   sum:"Худалдан авсан автомашины <mark>нуугдмал доголдол</mark> хүлээлгэн өгөх үед байсан нь нотлогдоогүй."}
 ];
 const LAWNAMES = {"ИХ":"Иргэний хууль","ИХШХШТХ":"Иргэний хэрэг шүүхэд хянан шийдвэрлэх тухай хууль","ХТХ":"Хөдөлмөрийн тухай хууль","ГБТХ":"Гэр бүлийн тухай хууль","ГТХ":"Газрын тухай хууль","ЗЕХ":"Захиргааны ерөнхий хууль","ЗХХШТХ":"Захиргааны хэрэг шүүхэд хянан шийдвэрлэх тухай хууль","ЭХ":"Эрүүгийн хууль"};
+/* ----- "Дамжуулан зээлэх" topic: extra cases + deep analysis of c14 ----- */
+const TOPICS = {
+  relend:{re:/дамжуул|нэр дээрээ зээл|нэрээрээ зээл|зээл авч өг/i, label:"дамжуулан зээлэх", total:63,
+    def:"өөрийн нэр дээр банк, ББСБ-аас зээл авч бусдад шилжүүлсэн, эсвэл бусдын хүсэлтээр зээл авч өгсөн маргаан. Жинхэнэ зээлдэгч хэн бэ, зээлийн хүү, эрсдэлийг хэн хариуцах вэ гэдэг нь гол асуудал.",
+    also:["нэр дээрээ зээл авч өгсөн","цалингийн зээл авч өгсөн","зээлийг нь төлнө гэж амласан","ББСБ-ын зээл дамжуулсан","бусдын өмнөөс зээл авсан"],
+    split:[41,38,21],
+    reasons:[{l:"Мөнгө хариуцагчид шилжсэн нь нотлогдоогүй",v:46},{l:"Жинхэнэ зээлдэгч гуравдагч этгээд",v:31},{l:"Хөөн хэлэлцэх хугацаа",v:15},{l:"Бусад",v:8}]}
+};
+const DETAIL14 = {
+  headline:"Нэхэмжлэгч өөрийн нэр дээр банкнаас 30 сая₮ зээл авч, мөн өдөр нь хариуцагчид “зээл” гэсэн утгаар шилжүүлжээ. Хариуцагч банкны сарын төлбөрийг хүүгийн хамт төлөхөөр гар бичмэлээр амлаж, 7 сар төлөөд зогсоосон. Шүүх <b>мөнгийг хүлээн авсан этгээд нь зээлдэгч</b> гэж үзэж, үндсэн зээл болон нэхэмжлэгчийн банкинд аль хэдийн төлсөн хүүг гаргуулсан. Харин <b>ирээдүйн хүү</b> (хохирол хараахан учраагүй) болон <b>бичгээр тохироогүй алданги</b>-г хангаагүй.",
+  timeline:[["2023.03.15","Нэхэмжлэгч “Х” банкнаас 30 сая₮ цалингийн зээл авав (36 сар, сарын 1.6%)"],["2023.03.15","Мөн өдөр хариуцагчийн дансанд 30 сая₮ шилжүүлэв — утга: “зээл”"],["2023.03.15","Хариуцагч “сарын төлбөрийг хүүгийн хамт би төлнө” гэсэн гар бичмэл баримт үйлдэв"],["2023.04–10","Хариуцагч 7 удаа, нийт 7,721,000₮ төлөв"],["2023.11","Төлөлт зогсов — нэхэмжлэгч банкинд өөрөө төлж эхлэв"],["2024.06.10","Бичгээр шаардах хүсэлт хүргүүлэв"],["2025.02.24","Шүүхэд нэхэмжлэл гаргав"],["2025.08.19","Шийдвэр — хэсэгчлэн хангав"]],
+  claims:[
+    {l:"Үндсэн зээлийн үлдэгдэл",c:25460000,a:25460000,basis:"ИХ 281.1",note:"30 сая₮ − хариуцагчийн төлсөн үндсэн хэсэг 4.54 сая₮"},
+    {l:"Банкинд төлсөн хүү (2023.11–2025.02)",c:5380000,a:5380000,basis:"ИХ 281.3",note:"Гар бичмэлд “хүүгийн хамт” гэж амласан"},
+    {l:"Цаашид төлөх хүү (2025.03–2026.03)",c:1370000,a:0,basis:"",note:"Хохирол бодитоор учраагүй — шаардах эрх үүсээгүй"},
+    {l:"Алданги (хоногийн 0.5%)",c:9000000,a:0,basis:"ИХ 232.4",note:"Алдангийн тохиролцоо бичгээр хийгдээгүй"}],
+  issues:[
+    {q:"Зээлийн харилцаа нэхэмжлэгч, хариуцагч хоёрын хооронд үүссэн үү?",ok:true,v:"Тийм",h:"Мөнгө хариуцагчийн дансанд орсон, гүйлгээний утга “зээл”, гар бичмэл амлалт, 7 сарын төлөлт — бүгд нэг чиглэлтэй. Банктай гэрээг нэхэмжлэгч байгуулсан нь хариуцагчийн нэхэмжлэгчийн өмнө хүлээсэн үүргийг үгүйсгэхгүй.",laws:["ИХ 281.1"],ev:["Банкны хуулга","Гар бичмэл баримт","7 удаагийн төлөлт"]},
+    {q:"“Мөнгийг Д-д өгсөн, би зөвхөн зуучилсан” гэх хариуцагчийн тайлбар",ok:false,v:"Хүлээн аваагүй",h:"Мөнгийг хариуцагч цааш хэнд шилжүүлсэн нь түүний нэхэмжлэгчийн өмнөх үүргийг өөрчлөхгүй. Нэхэмжлэгч Д-тэй шууд харилцсан, Д-г зээлдэгч гэж зөвшөөрсөн нотолгоо байхгүй.",laws:["ИХШХШТХ 38.1"],ev:["Хариуцагчаас Д руу хийсэн гүйлгээ"]},
+    {q:"Нэхэмжлэгчийн банкинд өөрөө төлсөн хүүг гаргуулах уу?",ok:true,v:"Тийм",h:"Хариуцагч сарын төлбөрийг хүүгийн хамт төлөхөөр бичгээр амласан тул банкны хүүг талуудын тохиролцсон хүү гэж үзэв.",laws:["ИХ 281.3"],ev:["Гар бичмэл баримт","Банкны төлбөрийн хуваарь"]},
+    {q:"Ирээдүйд төлөх хүүг урьдчилан гаргуулах уу?",ok:false,v:"Үгүй",h:"Нэхэмжлэгч хараахан төлөөгүй тул хохирол бодитоор учраагүй. Төлсний дараа тусад нь шаардах эрхтэй.",laws:[],ev:[]},
+    {q:"Алданги гаргуулах уу?",ok:false,v:"Үгүй",h:"Гар бичмэл баримтад алданги дурдаагүй; Viber-ээр “амаар тохирсон” гэх нь алдангийн хэлцэлд тавих бичгийн хэлбэрийн шаардлагыг хангахгүй.",laws:["ИХ 232.4"],ev:["Viber мессеж"]}],
+  evidence:[["Банкны хуулга — 30 сая₮, утга “зээл”","Нэхэмжлэгч","key"],["Гар бичмэл баримт (2023.03.15)","Нэхэмжлэгч","key"],["Хариуцагчийн 7 удаагийн төлөлт","Нэхэмжлэгч","key"],["Банктай байгуулсан зээлийн гэрээ","Нэхэмжлэгч","used"],["Шаардах хүсэлт (2024.06.10)","Нэхэмжлэгч","used"],["Viber мессеж — алдангийн тухай","Нэхэмжлэгч","no"],["Хариуцагчаас Д руу хийсэн гүйлгээ","Хариуцагч","no"]],
+  practice:[{l:"Үндсэн зээл",v:88,me:true},{l:"Банкинд төлсөн хүү",v:71,me:true},{l:"Ирээдүйн хүү",v:5,me:false},{l:"Бичгээр бус алданги",v:3,me:false}],
+  strengths:["“Мөнгийг хэн хүлээн авсан, тэр нь зээлдэгч” гэсэн тодорхой логик — ижил 63 шийдвэрийн дийлэнхтэй нийцнэ.","Хариуцагчийн 7 удаагийн төлөлтийг үүргээ хүлээн зөвшөөрсөн үйлдэл гэж үнэлсэн нь Хяналтын шатны практиктэй нийцнэ.","Ирээдүйн хүүг хангаагүй нь давж заалдах шатны сүүлийн хандлагатай нийцсэн (<a href=\"#/case/c16\" style=\"text-decoration:underline\">210/МА2025/00874</a>)."],
+  risks:[{lvl:"Дунд",t:"Шүүх Д-г гуравдагч этгээдээр оролцуулаагүй. Хариуцагч үүнийг процессын зөрчил гэж давж заалдаж болно — ижил үндэслэлээр гаргасан 11 гомдлоос 2 нь хэргийг буцаахад хүргэсэн."},{lvl:"Бага",t:"Хариуцагчийн 7 төлөлтийг банкны хуваарийн дагуу хүү, үндсэн зээлд хуваарилсан. Бүгдийг үндсэн зээлд тооцуулах маргаан гарвал ≈3.18 сая₮ зөрүү үүснэ."},{lvl:"Бага",t:"Хүүг ИХ 281.3 (тохирсон хүү) гэж үзсэн; зарим шүүх ижил нөхцөлд хохирол гэж үздэг. Дүн өөрчлөгдөхгүй ч үндэслэлийн маргаан байж болно."}],
+  appeal:"Хариуцагч давж заалдвал шийдвэр <b>хэвээр үлдэх магадлал ≈ 86%</b> — гар бичмэл амлалттай ижил 22 хэргийн 19 нь давж заалдах шатанд хэвээр үлдсэн.",
+  lessonsP:["Хүү, алдангийг гар бичмэл/гэрээнд <b>тодорхой бичүүл</b> — амаар тохирсон алданги хангагддаггүй (3%).","<b>Ирээдүйн хүүг бүү шаард</b> — банкны зээл хаагдсаны дараа нэмэлт нэхэмжлэл гарга (хөөн хэлэлцэх 3 жил).","Мөнгийг <b>бэлнээр бүү өг</b>, гүйлгээний утгад “зээл” гэж бич — бэлэн мөнгөтэй хэргүүдийн 46% нь нотлогдоогүйгээр унасан."],
+  lessonsD:["“Зуучлагч” тайлбарыг <b>нэхэмжлэгч Д-тэй шууд харилцсан</b> нотолгоогоор бататга; Д-г гуравдагч этгээдээр татахыг хүс.","Хийсэн төлөлтөө <b>үндсэн зээлд тооцуулах</b> маргаан гарга.","Хариуцагч төлөлтөө зогсоохоос өмнө бичгээр мэдэгдсэн бол хүүгийн хэмжээг бууруулах боломжтой."],
+  chain:[["Анхан шат","2025-08-19 · Хэсэгчлэн хангасан",1],["Давж заалдах шат","Хариуцагч 2025-09-03 гомдол гаргасан · хүлээгдэж буй",0],["Хяналтын шат","—",-1]],
+  qa:{"Ирээдүйн хүүг яагаад хангаагүй вэ?":{t:"Шүүх нэхэмжлэгч 2025.03-аас хойшхи хүүг банкинд хараахан төлөөгүй тул хохирол бодитоор учраагүй, шаардах эрх үүсээгүй гэж үзсэн. Нэхэмжлэгч төлсний дараа тусад нь шаардаж болно. Ижил 63 хэргийн зөвхөн 5%-д ирээдүйн хүүг гаргуулсан.",cite:"Үндэслэх хэсэг, 5-р догол мөр"},
+      "“Зуучилсан” гэх тайлбарыг юугаар няцаасан бэ?":{t:"(1) Мөнгө хариуцагчийн өөрийн дансанд орсон, (2) гар бичмэл баримтад “би төлнө” гэж өөрийн нэрээр амласан, (3) 7 сар өөрөө төлсөн. Хариуцагчаас Д руу хийсэн гүйлгээ нь зөвхөн хариуцагч–Д хоёрын харилцааг харуулна гэж шүүх үзсэн.",cite:"Үндэслэх хэсэг, 3–4-р догол мөр"},
+      "Давж заалдвал юу өөрчлөгдөж болох вэ?":{t:"Хамгийн боломжит өөрчлөлт: Д-г гуравдагч этгээдээр оролцуулаагүй процессын үндэслэлээр хэргийг анхан шатанд буцаах (дунд эрсдэл), эсвэл төлөлтийн хуваарилалтыг засаж ≈3.18 сая₮-оор бууруулах (бага эрсдэл). Ижил 22 хэргийн 19 нь хэвээр үлдсэн.",cite:"Ижил 22 давж заалдсан хэргийн дүн шинжилгээ"}},
+  similar:["c16","c17","c15"]
+};
+CASES.push(
+ {id:"c14",no:"182/ШШ2025/02964",date:"2025-08-19",court:"Чингэлтэй дүүргийн Иргэний хэргийн анхан шатны шүүх",cs:"ЧД анхан",level:"Анхан шат",type:"Иргэний",cat:"Зээлийн гэрээ",judge:"Л.Отгонбаяр",
+  parties:"Иргэн Б.С — Иргэн Ж.Т",claim:41210000,award:30840000,out:"part",outL:"Хэсэгчлэн хангасан",laws:["ИХ 281.1","ИХ 281.3","ИХ 232.4","ИХШХШТХ 38.1"],days:176,topic:"relend",rel:97,
+  sum:"Нэхэмжлэгч <mark>өөрийн нэр дээр банкнаас 30 сая₮ зээл авч</mark> хариуцагчид шилжүүлсэн; хариуцагч сарын төлбөрийг төлөхөөр <mark>гар бичмэлээр амлаж</mark>, 7 сар төлөөд зогсоосон. Үндсэн зээл, банкинд төлсөн хүүг гаргуулж, ирээдүйн хүү, алдангийг хангаагүй.",
+  detail:DETAIL14},
+ {id:"c16",no:"210/МА2025/00874",date:"2025-05-14",court:"Нийслэлийн Иргэний хэргийн давж заалдах шатны шүүх",cs:"Давж заалдах",level:"Давж заалдах шат",type:"Иргэний",cat:"Зээлийн гэрээ",judge:"Д.Ганзориг",
+  parties:"Иргэн Г.Н — Иргэн Т.Б",claim:18700000,award:15900000,out:"part",outL:"Шийдвэрт өөрчлөлт оруулсан",laws:["ИХ 281.1","ИХ 227.1","ИХШХШТХ 167.1"],topic:"relend",rel:91,
+  sum:"Анхан шатны шүүх <mark>цаашид банкинд төлөх хүүг</mark> гаргуулсныг “хохирол бодитоор учраагүй” гэж хасч, шийдвэрт өөрчлөлт оруулав. Нэр дээрээ авсан цалингийн зээлийг дамжуулсан хэрэг."},
+ {id:"c17",no:"180/ШШ2025/00652",date:"2025-01-29",court:"Хан-Уул дүүргийн Иргэний хэргийн анхан шатны шүүх",cs:"ХУД анхан",level:"Анхан шат",type:"Иргэний",cat:"Зээлийн гэрээ",judge:"Т.Сарангэрэл",
+  parties:"Иргэн Э.О — Иргэн Б.Ч",claim:9500000,award:9500000,out:"full",outL:"Бүрэн хангасан",laws:["ИХ 281.1","ИХ 282.1"],days:69,topic:"relend",rel:88,
+  sum:"Нэхэмжлэгч <mark>хадам эгчийнхээ хүсэлтээр</mark> ББСБ-аас зээл авч шилжүүлсэн; <mark>утасны ярианы бичлэг</mark>ээр хариуцагч зээлийг төлөхөө хүлээн зөвшөөрсөн нь тогтоогдов."},
+ {id:"c15",no:"181/ШШ2024/03308",date:"2024-10-07",court:"Сүхбаатар дүүргийн Иргэний хэргийн анхан шатны шүүх",cs:"СБД анхан",level:"Анхан шат",type:"Иргэний",cat:"Зээлийн гэрээ",judge:"Б.Энхтуяа",
+  parties:"Иргэн Н.М — Иргэн О.Д",claim:12000000,award:0,out:"dis",outL:"Хэрэгсэхгүй болгосон",laws:["ИХ 281.1","ИХШХШТХ 38.1","ИХШХШТХ 40.1"],days:112,topic:"relend",rel:84,
+  sum:"Нэхэмжлэгч ББСБ-аас авсан зээлээ <mark>бэлнээр гаргаж</mark> хариуцагчид өгсөн гэх боловч хүлээлгэн өгсөн баримт, гэрч байхгүй тул мөнгө хариуцагчид шилжсэн нь <mark>нотлогдоогүй</mark>."}
+);
+
+let caseTab = 0, curCase = null;
+function analysisHTML(c){
+  const d=c.detail, pct=Math.round(c.award/c.claim*1000)/10;
+  const lvl={"Дунд":"dis","Бага":"part","Өндөр":"dis"};
+  return `
+  <div class="grid" style="gap:20px;min-width:0;grid-template-columns:minmax(0,1fr)">
+    <div class="card pad ai-panel">
+      <div class="row" style="justify-content:space-between;margin-bottom:10px">${ai("Шийдвэрийн шинжилгээ")}<span class="muted" style="font-size:12px">14 хуудас шийдвэрээс</span></div>
+      <p style="margin:0 0 16px;font-size:15px;line-height:1.65">${d.headline}</p>
+      <div class="grid g3" style="gap:14px">
+        <div class="stat"><div class="v num">${mln(c.claim)}</div><div class="l">Нэхэмжилсэн</div></div>
+        <div class="stat"><div class="v num">${mln(c.award)}</div><div class="l">Хангасан — ${pct}%</div></div>
+        <div class="stat"><div class="v num">${c.days} хоног</div><div class="l">Нэхэмжлэлээс шийдвэр хүртэл</div><div class="d">Ижил хэргийн медиан 104</div></div>
+      </div>
+      <div style="margin-top:16px">${stackBar([{v:pct,c:"--s1",l:"Хангасан"},{v:Math.round((100-pct)*10)/10,c:"--s2",l:"Хангаагүй"}])}</div>
+      <div style="margin-top:8px">${legend([{c:"--s1",l:`Хангасан ${pct}%`},{c:"--s2",l:`Хангаагүй ${Math.round((100-pct)*10)/10}%`}])}</div>
+    </div>
+
+    <div class="card">
+      <div class="card-h"><h3>Шаардлага тус бүрээр</h3><span class="muted" style="font-size:13px">4 шаардлага · 2 хангасан</span></div>
+      <div class="tbl-wrap"><table class="t"><thead><tr><th>Шаардлага</th><th style="text-align:right">Нэхэмжилсэн</th><th style="min-width:150px">Хангасан</th><th>Шүүхийн үндэслэл</th></tr></thead><tbody>
+      ${d.claims.map(r=>`<tr><td style="font-weight:600">${r.l}</td><td style="text-align:right">${fmt(r.c)}₮</td>
+        <td><div class="row" style="gap:8px;flex-wrap:nowrap"><div class="track" style="flex:1;height:8px;background:var(--sunk);border-radius:0 4px 4px 0;min-width:50px" data-tip="<b>${r.l}</b><br>${fmt(r.a)}₮ / ${fmt(r.c)}₮"><div style="height:100%;width:${r.a/r.c*100}%;background:var(--s1);border-radius:0 4px 4px 0"></div></div><span class="tag ${r.a?"full":"dis"}">${r.a?"✓ "+fmt(r.a)+"₮":"✕ Хангаагүй"}</span></div></td>
+        <td style="font-size:13px" class="ink2">${r.basis?lawChip(r.basis)+" ":""}${r.note}</td></tr>`).join("")}
+      </tbody></table></div>
+    </div>
+
+    <div class="card">
+      <div class="card-h"><h3>Шүүхийн шийдвэрлэсэн 5 асуудал</h3>${ai()}</div>
+      ${d.issues.map((s,i)=>`<div class="issue">
+        <div class="row" style="gap:10px;flex-wrap:nowrap;align-items:flex-start"><span class="n">${i+1}</span><div style="flex:1;min-width:0"><div class="row" style="justify-content:space-between"><b style="font-size:15px">${s.q}</b><span class="tag ${s.ok?"full":"dis"}">${s.ok?"✓":"✕"} ${s.v}</span></div>
+        <p class="ink2" style="margin:6px 0 8px;font-size:14px">${s.h}</p>
+        <div class="row" style="gap:6px">${s.laws.map(lawChip).join("")}${s.ev.map(e=>`<span class="chip" style="font-size:12px;padding:2px 9px">📎 ${e}</span>`).join("")}</div></div></div></div>`).join("")}
+    </div>
+
+    <div class="grid g2">
+      <div class="card pad"><h3 style="font-size:17px;margin-bottom:14px">Үйл явдлын дараалал</h3>
+        <div class="chain">${d.timeline.map((t,i)=>`<div class="n ${i===d.timeline.length-1?"cur":""}"><span class="b">${i===d.timeline.length-1?"⚖":""}</span><div><b style="font-size:13px" class="mono">${t[0]}</b><div class="ink2" style="font-size:13.5px">${t[1]}</div></div></div>`).join("")}</div></div>
+      <div class="card"><div class="card-h"><h3 style="font-size:17px">Нотлох баримтын үнэлгээ</h3></div>
+        ${d.evidence.map(e=>`<div class="list-item" style="padding:11px 20px;align-items:center"><span class="dot ${e[2]==="no"?"n":e[2]==="key"?"y":"q"}">${e[2]==="no"?"✕":e[2]==="key"?"★":"✓"}</span><div style="flex:1;min-width:0;font-size:13.5px">${e[0]}<div class="muted" style="font-size:12px">${e[1]}</div></div><span class="tag ${e[2]==="key"?"full":e[2]==="no"?"dis":"neu"}">${e[2]==="key"?"Гол":e[2]==="no"?"Үнэлээгүй":"Туслах"}</span></div>`).join("")}</div>
+    </div>
+
+    <div class="card pad">
+      <div class="row" style="justify-content:space-between"><h3 style="font-size:17px">Энэ шийдвэр практикт нийцэж байна уу?</h3><span class="tag full">✓ Практикт нийцсэн</span></div>
+      <p class="muted" style="font-size:12.5px;margin:4px 0 12px">“Дамжуулан зээлэх” ижил 63 шийдвэрт шаардлага тус бүр хангагдсан хувь · ✓/✕ = энэ шийдвэрт</p>
+      ${d.practice.map(p=>`<div class="row" style="gap:10px;flex-wrap:nowrap"><div style="flex:1;min-width:0">${hbars([{l:p.l,v:p.v}])}</div><span class="dot ${p.me?"y":"n"}" title="${p.me?"Энэ шийдвэрт хангасан":"Энэ шийдвэрт хангаагүй"}">${p.me?"✓":"✕"}</span></div>`).join("")}
+    </div>
+
+    <div class="grid g2">
+      <div class="card pad"><div class="row" style="margin-bottom:10px"><span class="tag full">Шийдвэрийн хүчтэй тал</span></div>
+        <ul class="ink2" style="margin:0;padding-left:18px;font-size:14px;line-height:1.7">${d.strengths.map(s=>`<li>${s}</li>`).join("")}</ul></div>
+      <div class="card pad"><div class="row" style="margin-bottom:10px"><span class="tag dis">Сул тал ба давж заалдах эрсдэл</span></div>
+        ${d.risks.map(r=>`<div style="display:flex;gap:10px;margin-bottom:10px;font-size:14px"><span class="tag ${lvl[r.lvl]}" style="flex:none;height:fit-content">${r.lvl}</span><span class="ink2">${r.t}</span></div>`).join("")}
+        <div class="alert conf" style="padding:10px 12px;font-size:13.5px"><span class="ic" style="color:var(--ai)">${sparkle}</span><div>${d.appeal}</div></div></div>
+    </div>
+
+    <div class="grid g2">
+      <div class="card pad"><div class="eyebrow" style="margin-bottom:8px">Нэхэмжлэгчийн өмгөөлөгчид</div><div class="steps">${d.lessonsP.map((l,i)=>`<div class="s"><span class="n">${i+1}</span><div>${l}</div></div>`).join("")}</div></div>
+      <div class="card pad"><div class="eyebrow" style="margin-bottom:8px">Хариуцагчийн өмгөөлөгчид</div><div class="steps">${d.lessonsD.map((l,i)=>`<div class="s"><span class="n" style="background:var(--s2);color:#fff">${i+1}</span><div>${l}</div></div>`).join("")}</div></div>
+    </div>
+  </div>`;
+}
+function docHTML14(c){
+  return `<article class="card doc">
+    <h2>Шүүхийн шийдвэр</h2>
+    <div style="text-align:center;font-family:Inter;font-size:13px;color:var(--muted)">${c.date} · Улаанбаатар хот · Дугаар <span class="mono">${c.no}</span></div>
+    <div class="sec">Тодорхойлох хэсэг</div>
+    <p>${c.court}ийн шүүгч ${c.judge} даргалж, шүүх хуралдааны танхимд нээлттэй хийсэн шүүх хуралдаанаар нэхэмжлэгч Б.С-ийн нэхэмжлэлтэй, хариуцагч Ж.Т-д холбогдох, 41,210,000 төгрөг гаргуулах тухай иргэний хэргийг хянан хэлэлцэв.</p>
+    <div class="sec">Үндэслэх хэсэг</div>
+    <p>Нэхэмжлэгч нэхэмжлэлдээ: <span class="hl-fact">“Хариуцагчийн хүсэлтээр 2023 оны 3 дугаар сарын 15-ны өдөр “Х” банкнаас өөрийн нэр дээр 30,000,000 төгрөгийн цалингийн зээл авч, мөн өдөр хариуцагчийн дансанд “зээл” гэсэн утгаар шилжүүлсэн. Хариуцагч банкны сарын төлбөрийг хүүгийн хамт төлөхөөр гараар бичиж гарын үсэг зурсан. 7 сар төлсний дараа төлөхөө больсон”</span> гэжээ.</p>
+    <p>Хариуцагч тайлбартаа: <span class="hl-fact">“Мөнгийг би Д-д дамжуулж өгсөн. Нэхэмжлэгч үүнийг мэдэж байсан. Би зөвхөн зуучилсан тул зээлийг Д төлөх ёстой”</span> гэж маргажээ.</p>
+    <p><span class="hl-reason">Шүүх хэрэгт авагдсан нотлох баримтыг үнэлээд: мөнгө хариуцагчийн дансанд шилжсэн, гүйлгээний утга “зээл”, хариуцагч “сарын төлбөрийг хүүгийн хамт би төлнө” гэж өөрийн нэрээр бичсэн, мөн 7 удаа өөрөө төлсөн нь талуудын хооронд зээлийн харилцаа үүссэнийг нотолж байна гэж үзэв.</span> <span class="hl-law">Иргэний хуулийн 281 дүгээр зүйлийн 281.1</span>-д зааснаар зээлдэгч зээлсэнтэй ижил төрөл, тоо хэмжээ бүхий эд хөрөнгийг буцаан өгөх үүрэгтэй.</p>
+    <p><span class="hl-reason">Хариуцагч мөнгийг цааш Д-д шилжүүлсэн нь түүний нэхэмжлэгчийн өмнө хүлээсэн үүргийг өөрчлөхгүй бөгөөд нэхэмжлэгч Д-г зээлдэгчээр хүлээн зөвшөөрсөн нь</span> <span class="hl-law">Иргэний хэрэг шүүхэд хянан шийдвэрлэх тухай хуулийн 38.1</span>-д заасны дагуу нотлогдоогүй.</p>
+    <p><span class="hl-reason">Хариуцагч сарын төлбөрийг хүүгийн хамт төлөхөөр бичгээр амласан тул нэхэмжлэгчийн 2023.11–2025.02 хооронд банкинд төлсөн 5,380,000 төгрөгийн хүүг</span> <span class="hl-law">281.3</span>-т заасан талуудын тохиролцсон хүү гэж үзэж гаргуулна. <span class="hl-reason">Харин 2025 оны 3 дугаар сараас хойш төлөх 1,370,000 төгрөгийн хүүг нэхэмжлэгч хараахан төлөөгүй, хохирол бодитоор учраагүй тул хангах үндэслэлгүй.</span></p>
+    <p><span class="hl-reason">Алдангийн тохиролцоо бичгээр хийгдээгүй</span> тул <span class="hl-law">Иргэний хуулийн 232.4</span>-т заасны дагуу 9,000,000 төгрөгийн алдангийн шаардлагыг хангахгүй.</p>
+    <div class="sec">Тогтоох хэсэг</div>
+    <p>1. <span class="hl-law">Иргэний хуулийн 281.1, 281.3</span>-т зааснаар хариуцагч Ж.Т-гаас 30,840,000 төгрөг гаргуулж нэхэмжлэгч Б.С-д олгосугай.</p>
+    <p>2. Нэхэмжлэлийн үлдэх 10,370,000 төгрөг гаргуулах шаардлагыг хэрэгсэхгүй болгосугай.</p>
+    <p>3. Шийдвэрийг эс зөвшөөрвөл танилцуулснаас хойш 14 хоногийн дотор давж заалдах гомдол гаргах эрхтэй.</p>
+    <p class="muted" style="font-family:Inter;font-size:12.5px;margin-top:24px">— Жишээ бичвэр (зохиомол). Бодит системд shuukh.mn-ээс татсан эх шийдвэр энд харагдана.</p>
+  </article>`;
+}
+function searchTopic(){ for(const k in TOPICS){ if(F.q && TOPICS[k].re.test(F.q)) return [k,TOPICS[k]]; } return null; }
+
 const CATS = ["Зээлийн гэрээ","Хөдөлмөрийн маргаан","Гэр бүлийн маргаан","Түрээсийн гэрээ","Гэм хор","Худалдах, худалдан авах","Газрын маргаан","Залилах"];
 const TYPES = ["Иргэний","Эрүүгийн","Захиргааны"];
 const LEVELS = ["Анхан шат","Давж заалдах шат","Хяналтын шат"];
@@ -482,7 +622,7 @@ function pageHome(){
     <p class="lead">shuukh.mn дээрх бүх шийдвэрийг AI уншиж, ангилж, холбосон. Өмгөөлөгч, хуульчид секундийн дотор жишиг хэрэг, шүүгчийн хандлага, хуулийн тайлбарыг олно.</p>
     <div class="card composer">
       <div class="mode-tabs">${["Нөхцөл байдал","Түлхүүр үг","Хуулийн зүйл заалт","Хэргийн дугаар"].map((m,i)=>`<button class="${i===composerMode?"on":""}" onclick="composerMode=${i};render()">${m}</button>`).join("")}</div>
-      <textarea id="story" placeholder="${["Жишээ: Би найздаа 15 сая төгрөг зээлсэн, бичгээр гэрээ хийгээгүй…","Жишээ: утгагүй шилжүүлэг зээл нотлох","Жишээ: Иргэний хуулийн 281.1","Жишээ: 181/ШШ2025/01872"][composerMode]}"></textarea>
+      <textarea id="story" placeholder="${["Жишээ: Би найздаа 15 сая төгрөг зээлсэн, бичгээр гэрээ хийгээгүй…","Жишээ: дамжуулан зээлэх","Жишээ: Иргэний хуулийн 281.1","Жишээ: 181/ШШ2025/01872"][composerMode]}"></textarea>
       <div class="bar">
         <button class="chip click" title="Файл хавсаргах">${ic('<path d="M21 12.5 12.7 20.8a5 5 0 0 1-7.1-7.1l8.5-8.5a3.3 3.3 0 0 1 4.7 4.7l-8.5 8.5a1.7 1.7 0 0 1-2.4-2.4l7.8-7.8"/>')}Нотлох баримт хавсаргах</button>
         <button class="chip click" title="Дуугаар оруулах">${ic('<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>')}Дуугаар</button>
@@ -532,7 +672,7 @@ function pageHome(){
   </section>`;
 }
 function useEx(i){ $("#story").value = EX[i].s; $("#story").focus(); }
-function goMatch(){ const v=$("#story")?.value.trim(); if(v) sessionStorage.setItem("story",v); location.hash="#/match"; }
+function goMatch(){ const v=$("#story")?.value.trim(); if(composerMode>0){ location.hash="#/search?q="+encodeURIComponent(v||""); return; } if(v) try{sessionStorage.setItem("story",v)}catch(e){} location.hash="#/match"; }
 
 /* ----- MATCH ----- */
 let matchTab = 0;
@@ -703,22 +843,36 @@ function pageSearch(){
 function tog(k,v){ F[k].has(v)?F[k].delete(v):F[k].add(v); renderResults(); }
 function clearF(){ F.q="";F.judge="";F.law="";["type","cat","level","out"].forEach(k=>F[k].clear()); render(); }
 function renderResults(){
-  const q=F.q.toLowerCase();
-  const res=CASES.filter(c=>(!F.type.size||F.type.has(c.type))&&(!F.cat.size||F.cat.has(c.cat))&&(!F.level.size||F.level.has(c.level))&&(!F.out.size||F.out.has(c.out))&&(!F.judge||c.judge===F.judge)&&(!F.law||c.laws.join(" ").toLowerCase().includes(F.law.toLowerCase()))&&(!q||(c.sum+c.cat+c.no+c.judge+c.court+c.laws.join(" ")).toLowerCase().includes(q)));
+  const q=F.q.toLowerCase(), tp=searchTopic();
+  let res=CASES.filter(c=>(!F.type.size||F.type.has(c.type))&&(!F.cat.size||F.cat.has(c.cat))&&(!F.level.size||F.level.has(c.level))&&(!F.out.size||F.out.has(c.out))&&(!F.judge||c.judge===F.judge)&&(!F.law||c.laws.join(" ").toLowerCase().includes(F.law.toLowerCase()))&&(tp?c.topic===tp[0]:(!q||(c.sum+c.cat+c.no+c.judge+c.court+c.laws.join(" ")).toLowerCase().includes(q))));
+  if(tp) res.sort((a,b)=>b.rel-a.rel);
   const act=[...F.type,...F.level,...F.cat,...[...F.out].map(o=>OUT[o].l),F.judge,F.law].filter(Boolean);
   const o={full:0,part:0,dis:0}; res.forEach(c=>o[c.out]++); const n=res.length||1;
+  if(tp&&!act.length){ const [a,b,cc]=tp[1].split; o.full=a;o.part=b;o.dis=cc; }
+  const N=tp&&!act.length?100:n;
+  const T=tp&&tp[1];
   $("#results").innerHTML=`
-    <div class="row" style="justify-content:space-between"><div><b class="num">${fmt(res.length*2317+res.length%7)}</b> <span class="muted">шийдвэр (жишээнд ${res.length} харуулав)</span></div>
+    ${T?`<div class="card pad ai-panel" style="margin-bottom:16px">
+      <div class="row" style="justify-content:space-between;margin-bottom:8px">${ai("Хайлтыг ойлгосон нь")}<span class="muted" style="font-size:12px">утгын хайлт · 0.4 сек</span></div>
+      <p style="margin:0;font-size:14.5px"><b>“${T.label}”</b> — ${T.def}</p>
+      <div class="row" style="gap:6px;margin-top:10px"><span class="muted" style="font-size:12.5px">Мөн хайсан:</span>${T.also.map(x=>`<span class="chip" style="font-size:12px;padding:2px 9px">${x}</span>`).join("")}</div>
+      <div class="hr"></div>
+      <div class="grid g2" style="gap:20px">
+        <div><div class="grid g2" style="gap:12px"><div class="stat"><div class="v num">${T.total}</div><div class="l">Холбогдох шийдвэр</div></div><div class="stat"><div class="v num">${T.split[0]+T.split[1]}%</div><div class="l">Бүрэн эсвэл хэсэгчлэн хангагдсан</div></div></div>
+          <p class="ink2" style="font-size:13px;margin:12px 0 0">Гол маргаан: <b style="color:var(--ink)">мөнгө хэнд бодитоор шилжсэн</b>, хариуцагч төлөхөө <b style="color:var(--ink)">бичгээр амласан эсэх</b>.</p></div>
+        <div><div class="eyebrow" style="margin-bottom:4px">Хэрэгсэхгүй болсон шалтгаан</div>${hbars(T.reasons,{max:50})}</div>
+      </div></div>`:""}
+    <div class="row" style="justify-content:space-between"><div><b class="num">${T?T.total:fmt(res.length*2317+res.length%7)}</b> <span class="muted">шийдвэр (жишээнд ${res.length} харуулав)</span></div>
       <div class="row" style="gap:8px"><span class="muted" style="font-size:13px">Эрэмбэ</span><select style="border:1px solid var(--line);border-radius:8px;padding:5px 8px;background:var(--surface);font-size:13px"><option>Хамааралтай</option><option>Шинэ эхэндээ</option><option>Дүн</option></select>
       <button class="btn sm" onclick="toast('CSV татаж байна…')">Экспорт</button></div></div>
     ${act.length?`<div class="active-filters">${act.map(a=>`<span class="chip">${a}</span>`).join("")}</div>`:`<div style="height:14px"></div>`}
     <div class="card pad" style="margin-bottom:16px">
       <div class="row" style="justify-content:space-between;margin-bottom:10px"><span class="eyebrow">Энэ хайлтын үр дүнгийн хуваарилалт</span>${ai("Шууд тооцоолол")}</div>
-      ${stackBar([{v:Math.round(o.full/n*100),c:"--s1",l:"Бүрэн хангасан"},{v:Math.round(o.part/n*100),c:"--s3",l:"Хэсэгчлэн хангасан"},{v:Math.round(o.dis/n*100),c:"--s2",l:"Хэрэгсэхгүй болгосон"}])}
-      <div style="margin-top:10px">${legend([{c:"--s1",l:`Бүрэн ${Math.round(o.full/n*100)}%`},{c:"--s3",l:`Хэсэгчлэн ${Math.round(o.part/n*100)}%`},{c:"--s2",l:`Хэрэгсэхгүй ${Math.round(o.dis/n*100)}%`}])}</div>
+      ${stackBar([{v:Math.round(o.full/N*100),c:"--s1",l:"Бүрэн хангасан"},{v:Math.round(o.part/N*100),c:"--s3",l:"Хэсэгчлэн хангасан"},{v:Math.round(o.dis/N*100),c:"--s2",l:"Хэрэгсэхгүй болгосон"}])}
+      <div style="margin-top:10px">${legend([{c:"--s1",l:`Бүрэн ${Math.round(o.full/N*100)}%`},{c:"--s3",l:`Хэсэгчлэн ${Math.round(o.part/N*100)}%`},{c:"--s2",l:`Хэрэгсэхгүй ${Math.round(o.dis/N*100)}%`}])}</div>
     </div>
-    <div class="card">${res.length?res.map(c=>`<div class="result" onclick="location.hash='#/case/${c.id}'">
-      <div class="row" style="gap:8px"><span class="tag neu">${c.type}</span><span class="tag neu">${c.cat}</span>${outTag(c)}<span class="sp"></span><span class="muted mono">${c.no}</span></div>
+    <div class="card">${res.length?res.map((c,i)=>`<div class="result" onclick="location.hash='#/case/${c.id}'">
+      <div class="row" style="gap:8px">${T&&c.rel?`<span class="tag ai">${c.rel}% хамааралтай</span>`:""}${T&&i===0&&c.detail?`<span class="tag ai">${sparkle} Бүрэн шинжилгээтэй</span>`:""}<span class="tag neu">${c.type}</span><span class="tag neu">${c.cat}</span>${outTag(c)}<span class="sp"></span><span class="muted mono">${c.no}</span></div>
       <div class="case-title" style="margin-top:8px">${c.court}</div>
       <div class="case-meta"><span>${c.date}</span><span>${c.level}</span><span>Шүүгч ${c.judge}</span><span>${c.parties}</span>${c.claim?`<span>${money(c.claim)}</span>`:""}</div>
       <div class="sum">${sparkle} ${c.sum}</div>
@@ -729,7 +883,10 @@ function renderResults(){
 let chatLog=[];
 function pageCase(id){
   const c=CASES.find(x=>x.id===id)||CASES[0];
-  const sim=CASES.filter(x=>x.sim&&x.id!==c.id&&x.cat===c.cat).slice(0,3);
+  curCase=c; const d=c.detail;
+  const sim=d?d.similar.map(id=>{const s=CASES.find(x=>x.id===id);return {...s,sim:s.rel}}):CASES.filter(x=>x.sim&&x.id!==c.id&&x.cat===c.cat).slice(0,3);
+  const chain=d?d.chain:[["Анхан шат",c.date+" · "+OUT[c.out].l,1],["Давж заалдах шат","2025-06-02 · Хэвээр үлдээсэн",0],["Хяналтын шат","Гомдол гаргаагүй",-1]];
+  const chips=d?Object.keys(d.qa):["Шүүх юуг нотлох баримт гэж үзсэн бэ?","Хүүг яагаад хангасангүй?","Миний хэрэгтэй юугаараа ялгаатай вэ?"];
   return `
   <div class="wrap page-head fade-in">
     <div class="crumbs"><a href="#/">Нүүр</a> / <a href="#/search">Хайлт</a> / <span class="mono">${c.no}</span></div>
@@ -738,6 +895,7 @@ function pageCase(id){
       <span class="sp"></span><button class="btn sm" onclick="toast('Хавтсанд нэмлээ')">Хавтсанд нэмэх</button><button class="btn sm">PDF</button><a class="btn sm" href="#/search">shuukh.mn ↗</a></div>
   </div>
   <div class="wrap case-grid" style="margin-top:16px">
+    ${d?`<div style="min-width:0"><div class="tabs" style="margin-bottom:16px">${["Шинжилгээ","Шийдвэрийн бичвэр"].map((t,i)=>`<button class="${i===caseTab?"on":""}" onclick="caseTab=${i};render(true)">${i===0?sparkle+" ":""}${t}</button>`).join("")}</div>${caseTab?docHTML14(c):analysisHTML(c)}</div>`:`
     <article class="card doc">
       <div class="row" style="justify-content:center;gap:14px;font-family:Inter;font-size:12px;margin-bottom:24px;flex-wrap:wrap">
         <span class="row" style="gap:5px"><i style="width:10px;height:10px;border-radius:2px;background:color-mix(in srgb,var(--s1) 30%,transparent)"></i>Баримт</span>
@@ -756,32 +914,30 @@ function pageCase(id){
       <p>1. <span class="hl-law">Иргэний хуулийн 281 дүгээр зүйлийн 281.1</span>-д зааснаар хариуцагчаас ${money(c.award||c.claim)}-ийг гаргуулж нэхэмжлэгчид олгосугай.</p>
       <p>2. Шийдвэрийг эс зөвшөөрвөл танилцуулснаас хойш 14 хоногийн дотор давж заалдах гомдол гаргах эрхтэй.</p>
       <p class="muted" style="font-family:Inter;font-size:12.5px;margin-top:24px">— Жишээ бичвэр. Бодит системд эх шийдвэрийн бүрэн текст энд харагдана.</p>
-    </article>
+    </article>`}
 
     <aside class="grid sticky" style="gap:16px">
       <div class="card pad ai-panel">
-        <div class="row" style="justify-content:space-between;margin-bottom:10px">${ai("30 секундийн хураангуй")}<span class="muted" style="font-size:12px">3 мин уншина</span></div>
+        <div class="row" style="justify-content:space-between;margin-bottom:10px">${ai("30 секундийн хураангуй")}<span class="muted" style="font-size:12px">${d?"шийдвэр 14 хуудас":"3 мин уншина"}</span></div>
         <div style="font-size:14px" class="ink2">${c.sum}</div>
         <div class="hr"></div>
         <div class="fact"><span class="k">Шаардлага</span><span class="v num">${money(c.claim)}</span></div>
         <div class="fact"><span class="k">Хангасан</span><span class="v num">${money(c.award)}</span></div>
         <div class="fact"><span class="k">Шийдвэрлэсэн хугацаа</span><span class="v">${c.days?c.days+" хоног":"—"}</span></div>
-        <div class="fact"><span class="k">Гол асуудал</span><span class="v">Бичгээр бус зээлийн нотолгоо</span></div>
+        <div class="fact"><span class="k">Гол асуудал</span><span class="v">${d?"Дамжуулсан зээлийг хэн төлөх вэ":"Бичгээр бус зээлийн нотолгоо"}</span></div>
         <div class="eyebrow" style="margin:14px 0 8px">Хэрэглэсэн хууль</div>
         <div class="row" style="gap:6px">${c.laws.map(lawChip).join("")}</div>
       </div>
       <div class="card pad">
         <div class="eyebrow" style="margin-bottom:12px">Шатлалын түүх</div>
         <div class="chain">
-          <div class="n cur"><span class="b">1</span><div><b style="font-size:14px">Анхан шат</b><div class="muted" style="font-size:12.5px">${c.date} · ${OUT[c.out].l}</div></div></div>
-          <div class="n"><span class="b">2</span><div><b style="font-size:14px">Давж заалдах шат</b><div class="muted" style="font-size:12.5px">2025-06-02 · Хэвээр үлдээсэн</div></div></div>
-          <div class="n"><span class="b" style="border-style:dashed">3</span><div><b style="font-size:14px" class="muted">Хяналтын шат</b><div class="muted" style="font-size:12.5px">Гомдол гаргаагүй</div></div></div>
+          ${chain.map((x,i)=>`<div class="n ${x[2]===1?"cur":""}"><span class="b" style="${x[2]<0?"border-style:dashed":""}">${i+1}</span><div><b style="font-size:14px" class="${x[2]<0?"muted":""}">${x[0]}</b><div class="muted" style="font-size:12.5px">${x[1]}</div></div></div>`).join("")}
         </div>
       </div>
       <div class="card pad">
         <div class="row" style="justify-content:space-between;margin-bottom:10px">${ai("Шийдвэрээс асуух")}</div>
         <div class="chat" id="chat">${chatHTML()}</div>
-        <div class="row" style="gap:6px;margin-top:10px">${["Шүүх юуг нотлох баримт гэж үзсэн бэ?","Хүүг яагаад хангасангүй?","Миний хэрэгтэй юугаараа ялгаатай вэ?"].map(q=>`<span class="chip click" style="white-space:normal" onclick="ask('${q}')">${q}</span>`).join("")}</div>
+        <div class="row" style="gap:6px;margin-top:10px">${chips.map(q=>`<span class="chip click" style="white-space:normal" onclick="ask('${q}')">${q}</span>`).join("")}</div>
         <div class="chat-in"><input id="chatIn" placeholder="Асуултаа бичнэ үү…" onkeydown="if(event.key==='Enter')ask(this.value)"><button class="btn sm primary" onclick="ask($('#chatIn').value)">Илгээх</button></div>
       </div>
       ${sim.length?`<div class="card"><div class="card-h"><h3 style="font-size:15px">Төстэй шийдвэрүүд</h3></div>${sim.map(s=>`<a class="list-item" href="#/case/${s.id}"><div class="sim" style="--p:${s.sim};width:42px;height:42px;flex:none"><span style="font-size:11px">${s.sim}%</span></div><div style="min-width:0"><div style="font-size:13.5px;font-weight:600">${s.cs} ${outTag(s)}</div><div class="muted mono" style="font-size:11.5px">${s.no}</div></div></a>`).join("")}</div>`:""}
@@ -792,7 +948,8 @@ function chatHTML(){ return chatLog.length?chatLog.map(m=>`<div class="msg ${m.m
 function ask(q){
   if(!q||!q.trim()) return;
   chatLog.push({me:1,t:q});
-  const a = /нотлох/.test(q)?{t:"Шүүх (1) банкны гүйлгээний баримт, (2) хариуцагчийн 2023.09.03-ны мессежийг зээлийн харилцааг нотолсон гэж үзсэн. Хариуцагчийн “хамтын ажиллагаа” гэсэн тайлбарыг нотлоогүй тул хүлээн аваагүй.",cite:"Үндэслэх хэсэг, 3–4-р догол мөр"}
+  const qa=curCase&&curCase.detail&&curCase.detail.qa;
+  const a = qa&&qa[q] ? qa[q] : qa ? {t:"Энэ шийдвэрт: мөнгө хариуцагчийн дансанд шилжсэн, хариуцагч төлөхөө бичгээр амласан тул шүүх түүнийг зээлдэгч гэж үзсэн. Дэлгэрэнгүйг “Шинжилгээ” табаас харна уу.",cite:"Үндэслэх хэсэг"} : /нотлох/.test(q)?{t:"Шүүх (1) банкны гүйлгээний баримт, (2) хариуцагчийн 2023.09.03-ны мессежийг зээлийн харилцааг нотолсон гэж үзсэн. Хариуцагчийн “хамтын ажиллагаа” гэсэн тайлбарыг нотлоогүй тул хүлээн аваагүй.",cite:"Үндэслэх хэсэг, 3–4-р догол мөр"}
     : /хүү/i.test(q)?{t:"Энэ шийдвэрт хүүгийн шаардлага гаргаагүй. Ижил төрлийн хэргүүдэд хүүг бичгээр тохиролцоогүй бол ИХ 281.3-ын дагуу ихэнхдээ хангадаггүй (31 хэргийн 24-т).",cite:"Холбоотой 31 шийдвэрийн дүн шинжилгээ"}
     : {t:"Таны хэрэгтэй адил: бичгээр гэрээгүй, банкны гүйлгээтэй, мессежээр хүлээн зөвшөөрсөн. Ялгаа: энэ хэрэгт хариуцагч шүүхэд ирж маргасан; таны хэрэгт хариуцагч холбоо тасалсан тул эзгүйд шийдвэрлэх (ИХШХШТХ 100) боломжийг анхаарна уу.",cite:"Таны хэргийн мэдээлэл + Тодорхойлох хэсэг"};
   chatLog.push({t:`<span class="skeleton">Уншиж байна…</span>`});
@@ -964,7 +1121,8 @@ function pageFolder(){
    ROUTER / UI
    ===================================================================== */
 function render(keepScroll){
-  const h=location.hash.replace(/^#\/?/,""); const [r,arg]=h.split("/");
+  const full=location.hash.replace(/^#\/?/,""); const [h,qs]=full.split("?"); const [r,arg]=h.split("/");
+  if(r==="search"&&qs){ const v=new URLSearchParams(qs).get("q"); if(v!=null) F.q=v; }
   document.querySelectorAll("#nav a").forEach(a=>a.classList.toggle("on",a.dataset.r===(r==="case"?"search":r)));
   const app=$("#app"); const y=scrollY;
   const pages={"":pageHome,match:pageMatch,search:pageSearch,case:()=>pageCase(arg),judge:pageJudge,law:pageLaw,trends:pageTrends,folder:pageFolder};
@@ -973,7 +1131,7 @@ function render(keepScroll){
   if(keepScroll) scrollTo(0,y); else scrollTo(0,0);
 }
 function toast(t){ const el=document.createElement("div"); el.textContent=t; el.style.cssText="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:14px;z-index:100;box-shadow:0 8px 24px rgba(0,0,0,.2)"; document.body.appendChild(el); setTimeout(()=>el.remove(),1800); }
-window.addEventListener("hashchange",()=>{chatLog=[];render()});
+window.addEventListener("hashchange",()=>{chatLog=[];caseTab=0;render()});
 document.addEventListener("keydown",e=>{ if(e.key==="/"&&!/INPUT|TEXTAREA/.test(document.activeElement.tagName)&&!document.activeElement.isContentEditable){e.preventDefault();location.hash="#/search";setTimeout(()=>$("#q")?.focus(),50)} });
 $("#themeBtn").onclick=()=>{ const d=document.documentElement; const dark=d.dataset.theme?d.dataset.theme==="dark":matchMedia("(prefers-color-scheme: dark)").matches; d.dataset.theme=dark?"light":"dark"; try{localStorage.setItem("theme",d.dataset.theme)}catch(e){} };
 try{const t=localStorage.getItem("theme"); if(t) document.documentElement.dataset.theme=t;}catch(e){}
