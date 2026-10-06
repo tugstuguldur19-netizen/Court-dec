@@ -1,0 +1,5 @@
+# Runtime: pure Python Hunspell engine, XML for Office files,
+# and (Windows only) the COM bridge to running Word/Excel/PowerPoint.
+spylls==0.1.7
+lxml>=5.0
+pywin32>=306; sys_platform == "win32"

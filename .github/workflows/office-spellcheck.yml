@@ -1,0 +1,99 @@
+name: Office Spellcheck
+
+# Tests the spellchecker and builds the Windows app (a folder with
+# OfficeSpellcheck.exe, zipped). Download it from the run's "Artifacts".
+# Pushing a tag like spellcheck-v1.0.0 also attaches the zip to a GitHub release.
+
+on:
+  push:
+    paths:
+      - "office-spellcheck/**"
+      - ".github/workflows/office-spellcheck.yml"
+    tags:
+      - "spellcheck-v*"
+  pull_request:
+    paths:
+      - "office-spellcheck/**"
+      - ".github/workflows/office-spellcheck.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: office-spellcheck
+
+jobs:
+  test-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: office-spellcheck/requirements*.txt
+      - run: python -m pip install -r requirements.txt -r requirements-dev.txt
+      - run: python fetch_dictionaries.py
+      - run: python -m pytest -q
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: office-spellcheck/requirements*.txt
+      - run: python -m pip install -r requirements.txt -r requirements-dev.txt
+      - run: python fetch_dictionaries.py
+      - run: python -m pytest -q
+      - name: COM bridge to Office is importable
+        run: python -c "from offspell import live; assert live.available(), 'pywin32 missing'"
+
+      - name: Build OfficeSpellcheck.exe
+        run: >
+          python -m PyInstaller --noconfirm --windowed --name OfficeSpellcheck
+          --add-data "dictionaries;dictionaries"
+          --copy-metadata spylls --collect-submodules spylls
+          --hidden-import win32timezone
+          OfficeSpellcheck.py
+
+      - name: Smoke-test the built app on a real .docx
+        shell: pwsh
+        run: |
+          python -c "import docx; d = docx.Document(); d.add_paragraph('Монгл улсын шүүх шийдвр гаргав. The cuort agreed.'); d.save('smoke.docx')"
+          $p = Start-Process -FilePath dist\OfficeSpellcheck\OfficeSpellcheck.exe `
+                 -ArgumentList 'check','smoke.docx','--json','--output','smoke.json','--no-personal' `
+                 -WorkingDirectory $PWD -Wait -PassThru
+          Get-Content smoke.json -Encoding utf8
+          if ($p.ExitCode -ne 1) { throw "expected exit code 1 (errors found), got $($p.ExitCode)" }
+          $words = (Get-Content smoke.json -Raw -Encoding utf8 | ConvertFrom-Json).word -join ','
+          if ($words -ne 'Монгл,шийдвр,cuort') { throw "unexpected result: $words" }
+
+      - name: Zip
+        shell: pwsh
+        run: |
+          Copy-Item README.md dist\OfficeSpellcheck\README.md
+          Compress-Archive -Path dist\OfficeSpellcheck -DestinationPath OfficeSpellcheck-windows.zip
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: OfficeSpellcheck-windows
+          path: office-spellcheck/OfficeSpellcheck-windows.zip
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/spellcheck-v')
+    needs: [test-linux, windows]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v7
+        with:
+          name: OfficeSpellcheck-windows
+      - uses: softprops/action-gh-release@v3
+        with:
+          files: OfficeSpellcheck-windows.zip

@@ -1,0 +1,10 @@
+# Dictionaries are downloaded by fetch_dictionaries.py, not committed
+dictionaries/*.aff
+dictionaries/*.dic
+dictionaries/README_*.txt
+dictionaries/*.part
+build/
+dist/
+*.spec
+__pycache__/
+.pytest_cache/

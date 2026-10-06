@@ -1,0 +1,6 @@
+# Tests build real Office files with these; PyInstaller makes the .exe.
+pytest>=8
+python-docx>=1.1
+openpyxl>=3.1
+python-pptx>=1.0
+pyinstaller>=6.10
