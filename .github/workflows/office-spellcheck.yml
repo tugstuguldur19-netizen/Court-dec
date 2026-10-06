@@ -6,6 +6,8 @@ name: Office Spellcheck
 
 on:
   push:
+    # Listing tags alone would limit pushes to tags, so branches are named too.
+    branches: ["**"]
     paths:
       - "office-spellcheck/**"
       - ".github/workflows/office-spellcheck.yml"
