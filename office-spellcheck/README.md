@@ -16,14 +16,20 @@ dictionaries LibreOffice uses.
 ### Суулгах
 1. GitHub-ийн **Actions → Office Spellcheck** хэсгээс хамгийн сүүлийн амжилттай
    ажилласан (ногоон) ажлыг нээгээд **OfficeSpellcheck-windows** файлыг татаж авна.
-2. ZIP файлыг задлаад (жишээ нь `C:\OfficeSpellcheck`) доторх
-   **OfficeSpellcheck.exe**-г ажиллуулна. Суулгах шаардлагагүй.
-3. Анх нээхэд толь бичгийг ачаалахад 10 орчим секунд зарцуулна.
+2. ZIP файлыг задлаад, доторх **install.cmd** дээр давхар дарна. Админ эрх
+   шаардлагагүй. Word, Excel, PowerPoint нээлттэй бол хаахыг асууна.
+3. Word, Excel эсвэл PowerPoint-оо нээхэд **Home** болон **Review** табд
+   **"Зөв бичиг → Алдаа шалгах"** товч гарна. Start цэсэнд **Office Spellcheck** нэмэгдэнэ.
+
+Устгах: **Settings → Apps → "Зөв бичиг - Office Spellcheck" → Uninstall**.
 
 Windows "Unknown publisher" гэж анхааруулбал **More info → Run anyway** дарна (програм
 тоон гарын үсэггүй учраас).
 
 ### Ашиглах
+- **"Алдаа шалгах" товч** (Word, Excel, PowerPoint-ын Home/Review таб) — нээлттэй
+  баримтыг шалгагчид нээнэ. Анх дарахад толь бичиг 10 орчим секунд ачаална; цонхыг
+  нээлттэй орхивол дараагийн дарах бүрт шууд нээгдэнэ.
 - **Файл нээх…** — `.docx`, `.xlsx`, `.pptx` файлыг шалгана. Засварласны дараа
   **Засварласан файлыг хадгалах…** дарж хадгална. Анхны файл өөрчлөгдөхгүй
   (өөр нэрээр хадгалагдана).
@@ -48,17 +54,11 @@ Word монгол текстийг англиар шалгаж бүх үгийн
 сонгоод **Review → Language → Set Proofing Language → Mongolian** эсвэл
 **Do not check spelling or grammar** гэж тохируулна.
 
-### Word дотроос нэг товчоор ажиллуулах (заавал биш)
-Word-д **View → Macros → Create** хийж дараах макрог нэмээд Quick Access Toolbar-т
-товч болгон байрлуулна (замыг өөрийнхөөрөө солино):
-
-```vba
-Sub ZuvBichig()
-    Shell """C:\OfficeSpellcheck\OfficeSpellcheck.exe"" --live word", vbNormalFocus
-End Sub
-```
-
-Excel-д `--live excel`, PowerPoint-д `--live powerpoint` гэж бичнэ.
+### Товч гарахгүй бол
+- Word: **File → Options → Add-ins → Manage: COM Add-ins → Go…** хэсэгт
+  **"Зөв бичиг (Office Spellcheck)"** сонгогдсон эсэхийг шалгана.
+- Тэнд байхгүй эсвэл "Disabled Items"-д орсон бол **install.cmd**-г дахин ажиллуулаад
+  Office-оо дахин нээнэ.
 
 ---
 
@@ -67,14 +67,21 @@ Excel-д `--live excel`, PowerPoint-д `--live powerpoint` гэж бичнэ.
 ### Install
 1. On GitHub open **Actions → Office Spellcheck**, pick the latest green run and
    download **OfficeSpellcheck-windows**.
-2. Unzip it anywhere (for example `C:\OfficeSpellcheck`) and run **OfficeSpellcheck.exe**.
-   Nothing is installed.
-3. Loading the dictionaries takes about 10 seconds when the app starts.
+2. Unzip it and double-click **install.cmd**. No administrator rights are needed; it
+   asks you to close Word, Excel and PowerPoint if they are open. It copies the app to
+   `%LOCALAPPDATA%\Programs\OfficeSpellcheck` and adds a Start menu shortcut.
+3. Open Word, Excel or PowerPoint: the **"Зөв бичиг → Алдаа шалгах"** button is on the
+   **Home** and **Review** tabs.
+
+To remove it: **Settings → Apps → "Зөв бичиг - Office Spellcheck" → Uninstall**.
 
 The app is not code-signed, so Windows SmartScreen may say "Unknown publisher":
 choose **More info → Run anyway**.
 
 ### Use
+- **The ribbon button** (Home and Review tabs in Word, Excel and PowerPoint) opens the
+  checker on the document you are working on. The first click loads the dictionaries
+  (about 10 seconds); leave the checker window open and later clicks open instantly.
 - **Open file…** checks a `.docx`, `.xlsx` or `.pptx` file (also the macro and
   template variants). Fix the words, then **Save corrected file…**; it suggests a
   new name, so the original stays as it was.
@@ -88,7 +95,12 @@ choose **More info → Run anyway**.
   digits (2024-ний), check English words.
 - Keys: `Enter` = Change, `Ctrl+O` = Open file. Double-click a suggestion to use it.
 - You can also drop a file onto `OfficeSpellcheck.exe`, or start it with
-  `OfficeSpellcheck.exe --live word` (or `excel`, `powerpoint`).
+  `OfficeSpellcheck.exe --live word` (or `excel`, `powerpoint`). If the checker is
+  already open, that window takes the request.
+
+**If the button does not appear:** in Word open **File → Options → Add-ins**, choose
+**Manage: COM Add-ins → Go…** and tick **"Зөв бичиг (Office Spellcheck)"**. If it is
+missing or listed under **Disabled Items**, run **install.cmd** again and restart Office.
 
 What is checked: Word body text, tables, text boxes, headers, footers, footnotes,
 endnotes and comments (not deleted tracked changes or field codes); Excel text
@@ -128,7 +140,8 @@ python OfficeSpellcheck.py          # the window
 ```
 
 Tests: `python -m pip install -r requirements-dev.txt && python -m pytest`.
-On Windows, `build_windows.bat` builds `dist\OfficeSpellcheck\OfficeSpellcheck.exe`.
+On Windows, `build_windows.bat` builds `dist\OfficeSpellcheck\` with the app, the add-in
+and `install.cmd` (it also needs the .NET SDK for the add-in).
 The GitHub workflow `.github/workflows/office-spellcheck.yml` runs the tests on Linux
 and Windows, builds the .exe, checks it on a sample file, and uploads the zip.
 
@@ -144,6 +157,11 @@ and Windows, builds the .exe, checks it on a sample file, and uploads the zip.
   every other part of the file is copied byte for byte.
 - `offspell/live.py`: talks to running Word/Excel/PowerPoint over COM (pywin32).
 - `offspell/gui.py`: the Tkinter window. Spell-checking runs on a background thread.
+- `offspell/instance.py`: keeps one window; a second start hands its request over
+  through a token-protected socket on 127.0.0.1.
+- `addin/`: the ribbon button, a COM add-in for .NET Framework 4.8 (built into Windows
+  10 and 11), registered per user by `installer/install.ps1`. `addin/test/` holds a C++
+  program that loads it through COM the way Office does; CI runs it in 64-bit and 32-bit.
 
 ### Licences
 - Mongolian dictionary `mn_MN`: © Batmunkh Dorjgotov, LaTeX Project Public License 1.3,
@@ -152,8 +170,9 @@ and Windows, builds the .exe, checks it on a sample file, and uploads the zip.
 - spylls: Mozilla Public License 2.0. lxml: BSD. pywin32: PSF.
 
 ### Known limits
-- Live mode needs Windows and desktop Office. It was tested against simulated Office
-  objects, not yet on a real Office install. If a button says Office is not running
+- Live mode and the ribbon button need Windows and desktop Office. They were tested
+  against simulated Office objects and a COM client that loads the add-in like Office
+  does, not yet inside a real Office install. If a button says Office is not running
   while it is, check that Office and this app run as the same user (both not "as
   administrator").
 - Suggestions for Mongolian take 1–4 seconds in total; the best one usually shows

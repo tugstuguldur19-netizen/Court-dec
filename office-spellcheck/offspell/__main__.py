@@ -68,11 +68,19 @@ def cmd_check(args):
 def main(argv=None):
     argv = sys.argv[1:] if argv is None else argv
     if argv[:1] not in (["check"], ["-h"], ["--help"]):
-        from .gui import run
-        if argv[:1] == ["--live"] and len(argv) > 1:
-            return run(live_kind=argv[1].lower())
+        import os
+
+        from . import instance
+        live_kind = argv[1].lower() if argv[:1] == ["--live"] and len(argv) > 1 else None
         # "OfficeSpellcheck.exe report.docx", or a file dropped on the icon
-        return run(path=argv[0] if argv else None)
+        path = argv[0] if argv and not live_kind else None
+        request = {"live": live_kind} if live_kind else ({"path": os.path.abspath(path)} if path else {})
+        # Before loading the window code: if the checker is already open,
+        # hand the request over and exit straight away.
+        if instance.hand_off(request):
+            return 0
+        from .gui import run
+        return run(path=path, live_kind=live_kind)
     parser = argparse.ArgumentParser(prog="offspell", description="Offline spellchecker for Word, Excel and PowerPoint")
     sub = parser.add_subparsers(dest="cmd")
     c = sub.add_parser("check", help="list possible spelling errors in .docx/.xlsx/.pptx files")

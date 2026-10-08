@@ -9,7 +9,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 from tkinter import font as tkfont
 
-from . import live, paths
+from . import instance, live, paths
 from . import text as T
 from .check import build_issues, find_hits
 from .engine import Options, Speller
@@ -302,6 +302,23 @@ class App:
     def recheck(self):
         if self.source is not None:
             self.start_scan(self.source)
+
+    def handle_request(self, req):
+        """A later start of the program (e.g. the Office ribbon button) asked
+        this window to check something."""
+        root = self.root
+        try:
+            root.deiconify()
+            root.lift()
+            root.attributes("-topmost", True)
+            root.after(400, lambda: root.attributes("-topmost", False))
+            root.focus_force()
+        except tk.TclError:
+            pass
+        if req.get("path"):
+            self.open_path(req["path"])
+        elif req.get("live") in live.SOURCES and live.available():
+            self.open_live(req["live"])
 
     # ------------------------------------------------------------ checking
 
@@ -649,6 +666,13 @@ class App:
 
 
 def run(path=None, live_kind=None):
+    request = {}
+    if path:
+        request["path"] = os.path.abspath(path)
+    elif live_kind:
+        request["live"] = live_kind
+    if instance.hand_off(request):
+        return 0   # the window that is already open took it
     if sys.platform == "win32":
         try:
             import ctypes
@@ -659,6 +683,10 @@ def run(path=None, live_kind=None):
     style = ttk.Style(root)
     if sys.platform != "win32" and "clam" in style.theme_names():
         style.theme_use("clam")
-    App(root, open_path=path, live_kind=live_kind)
-    root.mainloop()
+    app = App(root, open_path=path, live_kind=live_kind)
+    server = instance.Server(lambda req: app.worker.post(app.handle_request, req))
+    try:
+        root.mainloop()
+    finally:
+        server.close()
     return 0

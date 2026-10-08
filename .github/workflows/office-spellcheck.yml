@@ -75,11 +75,52 @@ jobs:
           $words = (Get-Content smoke.json -Raw -Encoding utf8 | ConvertFrom-Json).word -join ','
           if ($words -ne 'Монгл,шийдвр,cuort') { throw "unexpected result: $words" }
 
-      - name: Zip
+      - name: Build the Office add-in (ribbon button)
+        run: dotnet build addin\OfficeSpellcheckAddin.csproj -c Release -nologo
+
+      - name: Put the add-in and installer next to the app
         shell: pwsh
         run: |
+          Copy-Item addin\bin\Release\net48\OfficeSpellcheckAddin.dll dist\OfficeSpellcheck\
+          Copy-Item installer\install.cmd, installer\install.ps1, installer\uninstall.ps1 dist\OfficeSpellcheck\
           Copy-Item README.md dist\OfficeSpellcheck\README.md
-          Compress-Archive -Path dist\OfficeSpellcheck -DestinationPath OfficeSpellcheck-windows.zip
+
+      - name: Build the COM test client (64-bit and 32-bit)
+        shell: pwsh
+        run: |
+          cmake -S addin\test -B build-client64 -A x64
+          cmake --build build-client64 --config Release
+          cmake -S addin\test -B build-client32 -A Win32
+          cmake --build build-client32 --config Release
+
+      - name: Install, drive the add-in like Office does, uninstall
+        shell: pwsh
+        run: |
+          $target = Join-Path $env:RUNNER_TEMP 'OfficeSpellcheck'
+          # Windows PowerShell 5.1, the version users have
+          powershell.exe -NoProfile -ExecutionPolicy Bypass -File dist\OfficeSpellcheck\install.ps1 -Target $target -Quiet
+          if ($LASTEXITCODE -ne 0) { throw "install failed" }
+          foreach ($app in 'Word', 'Excel', 'PowerPoint') {
+            $k = Get-ItemProperty "HKCU:\Software\Microsoft\Office\$app\Addins\OfficeSpellcheck.Addin"
+            if ($k.LoadBehavior -ne 3) { throw "$app add-in key missing" }
+            Write-Host "$app : $($k.FriendlyName)"
+          }
+          $env:OFFICESPELLCHECK_ADDIN_DRYRUN = Join-Path $env:RUNNER_TEMP 'dryrun.txt'
+          & build-client64\Release\addin_client.exe
+          if ($LASTEXITCODE -ne 0) { throw "64-bit COM client failed" }
+          & build-client32\Release\addin_client.exe
+          if ($LASTEXITCODE -ne 0) { throw "32-bit COM client failed" }
+          powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $target 'uninstall.ps1') -Target $target -KeepFiles -Quiet
+          foreach ($k in 'HKCU:\Software\Microsoft\Office\Word\Addins\OfficeSpellcheck.Addin',
+                         'HKCU:\Software\Classes\CLSID\{AFFFDE13-884F-4B09-9A6A-67F1FE2D4BB3}',
+                         'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\OfficeSpellcheck') {
+            if (Test-Path $k) { throw "uninstall left $k" }
+          }
+          Write-Host "install / COM / uninstall: ok"
+
+      - name: Zip
+        shell: pwsh
+        run: Compress-Archive -Path dist\OfficeSpellcheck -DestinationPath OfficeSpellcheck-windows.zip
 
       - uses: actions/upload-artifact@v7
         with:

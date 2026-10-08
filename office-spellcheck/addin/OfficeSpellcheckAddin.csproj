@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    The "Зөв бичиг" ribbon button for Word, Excel and PowerPoint.
+    A classic COM add-in on .NET Framework 4.8 (part of Windows 10 and 11),
+    so it needs no Office SDK, no VSTO runtime and no admin rights.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <AssemblyName>OfficeSpellcheckAddin</AssemblyName>
+    <RootNamespace>OfficeSpellcheck</RootNamespace>
+    <LangVersion>7.3</LangVersion>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <!-- The installer writes this exact version into the COM registration. -->
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+    <Product>Office Spellcheck</Product>
+    <Description>Ribbon button that starts the offline Mongolian/English spellchecker</Description>
+    <Copyright>Office Spellcheck contributors</Copyright>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Lets the project build anywhere, including Linux CI, without the targeting pack installed. -->
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+  </ItemGroup>
+
+</Project>

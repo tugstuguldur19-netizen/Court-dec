@@ -65,3 +65,16 @@ def test_open_fix_save(root, tmp_path, monkeypatch):
     app.toggle_lang()
     assert app.tree.heading("word")["text"] == "Үг"
     app.quit()
+
+
+def test_request_from_second_start_opens_file(root, tmp_path, monkeypatch):
+    src = tmp_path / "second.docx"
+    d = docx.Document()
+    d.add_paragraph("cuort")
+    d.save(src)
+    app = gui.App(root)
+    pump(root, lambda: app.ready)
+    app.handle_request({"path": str(src)})
+    pump(root, lambda: app.issues)
+    assert [i.word for i in app.issues] == ["cuort"]
+    assert app.source.title == "second.docx"
