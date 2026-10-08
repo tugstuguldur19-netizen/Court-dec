@@ -93,6 +93,14 @@ jobs:
           cmake -S addin\test -B build-client32 -A Win32
           cmake --build build-client32 --config Release
 
+      - name: Turn on .NET assembly-load logging (read only if a step fails)
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force C:\fusionlog | Out-Null
+          reg add HKLM\SOFTWARE\Microsoft\Fusion /v EnableLog /t REG_DWORD /d 1 /f
+          reg add HKLM\SOFTWARE\Microsoft\Fusion /v LogFailures /t REG_DWORD /d 1 /f
+          reg add HKLM\SOFTWARE\Microsoft\Fusion /v LogPath /t REG_SZ /d C:\fusionlog\ /f
+
       - name: Install, drive the add-in like Office does, uninstall
         shell: pwsh
         run: |
@@ -117,6 +125,31 @@ jobs:
             if (Test-Path $k) { throw "uninstall left $k" }
           }
           Write-Host "install / COM / uninstall: ok"
+
+      - name: Diagnostics for the add-in (only when it failed)
+        if: failure()
+        shell: pwsh
+        run: |
+          $target = Join-Path $env:RUNNER_TEMP 'OfficeSpellcheck'
+          $dll = Join-Path $target 'OfficeSpellcheckAddin.dll'
+          Write-Host "--- files"; Get-ChildItem $target -File | Select-Object Name, Length | Format-Table | Out-String | Write-Host
+          Write-Host "--- registration"; reg query "HKCU\Software\Classes\CLSID\{AFFFDE13-884F-4B09-9A6A-67F1FE2D4BB3}" /s
+          reg query "HKCU\Software\Classes\OfficeSpellcheck.Addin" /s
+          Write-Host "--- runtime"; Test-Path C:\Windows\System32\mscoree.dll
+          reg query "HKLM\SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full" /v Release
+          Write-Host "--- assembly identity and activation, from Windows PowerShell 5.1 (.NET Framework 4)"
+          $probe = @"
+          `$n = [Reflection.AssemblyName]::GetAssemblyName('$dll'); 'identity: ' + `$n.FullName
+          try { `$t = [Type]::GetTypeFromProgID('OfficeSpellcheck.Addin', `$true); 'type: ' + `$t; `$o = [Activator]::CreateInstance(`$t); 'created: ' + `$o }
+          catch { 'activation error: ' + `$_.Exception.ToString() }
+          try { `$a = [Reflection.Assembly]::LoadFrom('$dll'); 'LoadFrom ok: ' + `$a.FullName; `$c = `$a.CreateInstance('OfficeSpellcheck.Connect'); 'direct create: ' + `$c }
+          catch { 'LoadFrom error: ' + `$_.Exception.ToString() }
+          "@
+          powershell.exe -NoProfile -Command $probe
+          Write-Host "--- .NET load log"
+          Get-ChildItem C:\fusionlog -Recurse -File -ErrorAction SilentlyContinue | Select-Object -First 8 | ForEach-Object {
+            Write-Host "== $($_.FullName)"; Get-Content $_.FullName -ErrorAction SilentlyContinue | Select-Object -First 60 | Write-Host
+          }
 
       - name: Zip
         shell: pwsh
