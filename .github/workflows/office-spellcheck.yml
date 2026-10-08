@@ -113,11 +113,23 @@ jobs:
             if ($k.LoadBehavior -ne 3) { throw "$app add-in key missing" }
             Write-Host "$app : $($k.FriendlyName)"
           }
+          # GitHub's Windows machines run as administrator with UAC off, and COM
+          # ignores per-user (HKCU) class registrations in such processes.
+          # Office on a normal PC runs un-elevated and reads them from HKCU.
+          # So, for this test only, copy exactly what the installer wrote into HKLM.
+          $clsid = '{AFFFDE13-884F-4B09-9A6A-67F1FE2D4BB3}'
+          foreach ($k in "Software\Classes\CLSID\$clsid", "Software\Classes\Wow6432Node\CLSID\$clsid", 'Software\Classes\OfficeSpellcheck.Addin') {
+            reg copy "HKCU\$k" "HKLM\$k" /s /f | Out-Null
+            if ($LASTEXITCODE -ne 0) { throw "could not copy $k" }
+          }
           $env:OFFICESPELLCHECK_ADDIN_DRYRUN = Join-Path $env:RUNNER_TEMP 'dryrun.txt'
           & build-client64\Release\addin_client.exe
           if ($LASTEXITCODE -ne 0) { throw "64-bit COM client failed" }
           & build-client32\Release\addin_client.exe
           if ($LASTEXITCODE -ne 0) { throw "32-bit COM client failed" }
+          foreach ($k in "Software\Classes\CLSID\$clsid", "Software\Classes\Wow6432Node\CLSID\$clsid", 'Software\Classes\OfficeSpellcheck.Addin') {
+            reg delete "HKLM\$k" /f | Out-Null
+          }
           powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $target 'uninstall.ps1') -Target $target -KeepFiles -Quiet
           foreach ($k in 'HKCU:\Software\Microsoft\Office\Word\Addins\OfficeSpellcheck.Addin',
                          'HKCU:\Software\Classes\CLSID\{AFFFDE13-884F-4B09-9A6A-67F1FE2D4BB3}',

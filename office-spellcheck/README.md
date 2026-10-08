@@ -59,6 +59,8 @@ Word монгол текстийг англиар шалгаж бүх үгийн
   **"Зөв бичиг (Office Spellcheck)"** сонгогдсон эсэхийг шалгана.
 - Тэнд байхгүй эсвэл "Disabled Items"-д орсон бол **install.cmd**-г дахин ажиллуулаад
   Office-оо дахин нээнэ.
+- Word-оо **"Run as administrator"**-аар бүү нээ: Windows ийм үед хэрэглэгчийн
+  нэмэлтүүдийг (add-in) ачаалдаггүй.
 
 ---
 
@@ -101,6 +103,8 @@ choose **More info → Run anyway**.
 **If the button does not appear:** in Word open **File → Options → Add-ins**, choose
 **Manage: COM Add-ins → Go…** and tick **"Зөв бичиг (Office Spellcheck)"**. If it is
 missing or listed under **Disabled Items**, run **install.cmd** again and restart Office.
+Don't start Office with **Run as administrator**: Windows does not load per-user add-ins
+into programs running as administrator.
 
 What is checked: Word body text, tables, text boxes, headers, footers, footnotes,
 endnotes and comments (not deleted tracked changes or field codes); Excel text
