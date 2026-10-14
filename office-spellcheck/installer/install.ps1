@@ -72,7 +72,9 @@ $Exe = Join-Path $targetFull 'OfficeSpellcheck.exe'
 foreach ($f in @($Dll, $Exe)) {
     if (-not (Test-Path -LiteralPath $f)) { throw "Missing file: $f" }
 }
-$CodeBase = ([Uri]$Dll).AbsoluteUri
+# Written the way regasm writes it: the plain path, not URL-escaped, so a
+# user folder with Mongolian letters (C:\Users\Төгстөгөлдөр) stays readable.
+$CodeBase = 'file:///' + ($Dll -replace '\\', '/')
 
 # --- 4. Register the add-in as a COM class (64-bit and 32-bit Office) ----
 Set-RegValue "HKCU:\Software\Classes\$ProgId" '' $ClassName
@@ -105,14 +107,75 @@ foreach ($app in $OfficeApps) {
 }
 
 # --- 6. Start menu shortcut and the uninstall entry -----------------------
+# WScript.Shell cannot store paths with letters such as "ө" and "ү", so the
+# shortcut is written through the Unicode shell interface (IShellLinkW).
+$shellLinkCode = @'
+using System;
+using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.ComTypes;
+using System.Text;
+
+namespace OfficeSpellcheckInstaller
+{
+    [ComImport, InterfaceType(ComInterfaceType.InterfaceIsIUnknown), Guid("000214F9-0000-0000-C000-000000000046")]
+    interface IShellLinkW
+    {
+        void GetPath([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder file, int max, IntPtr findData, int flags);
+        void GetIDList(out IntPtr idl);
+        void SetIDList(IntPtr idl);
+        void GetDescription([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder name, int max);
+        void SetDescription([MarshalAs(UnmanagedType.LPWStr)] string name);
+        void GetWorkingDirectory([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder dir, int max);
+        void SetWorkingDirectory([MarshalAs(UnmanagedType.LPWStr)] string dir);
+        void GetArguments([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder args, int max);
+        void SetArguments([MarshalAs(UnmanagedType.LPWStr)] string args);
+        void GetHotkey(out short hotkey);
+        void SetHotkey(short hotkey);
+        void GetShowCmd(out int showCmd);
+        void SetShowCmd(int showCmd);
+        void GetIconLocation([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder path, int max, out int index);
+        void SetIconLocation([MarshalAs(UnmanagedType.LPWStr)] string path, int index);
+        void SetRelativePath([MarshalAs(UnmanagedType.LPWStr)] string path, int reserved);
+        void Resolve(IntPtr hwnd, int flags);
+        void SetPath([MarshalAs(UnmanagedType.LPWStr)] string file);
+    }
+
+    [ComImport, Guid("00021401-0000-0000-C000-000000000046")]
+    class ShellLink { }
+
+    public static class Shortcut
+    {
+        public static void Create(string lnk, string target, string workDir, string description)
+        {
+            var link = (IShellLinkW)new ShellLink();
+            link.SetPath(target);
+            link.SetWorkingDirectory(workDir);
+            link.SetDescription(description);
+            link.SetIconLocation(target, 0);
+            ((IPersistFile)link).Save(lnk, true);
+        }
+
+        public static string Target(string lnk)
+        {
+            var link = (IShellLinkW)new ShellLink();
+            ((IPersistFile)link).Load(lnk, 0);
+            var sb = new StringBuilder(1024);
+            link.GetPath(sb, sb.Capacity, IntPtr.Zero, 0);
+            return sb.ToString();
+        }
+    }
+}
+'@
 $programs = [Environment]::GetFolderPath('Programs')
 $shortcut = Join-Path $programs 'Office Spellcheck.lnk'
-$shell = New-Object -ComObject WScript.Shell
-$link = $shell.CreateShortcut($shortcut)
-$link.TargetPath = $Exe
-$link.WorkingDirectory = $targetFull
-$link.Description = 'Зөв бичгийн шалгагч / Office Spellcheck'
-$link.Save()
+try {
+    if (-not ('OfficeSpellcheckInstaller.Shortcut' -as [type])) { Add-Type -TypeDefinition $shellLinkCode }
+    [OfficeSpellcheckInstaller.Shortcut]::Create($shortcut, $Exe, $targetFull, 'Зөв бичгийн шалгагч / Office Spellcheck')
+} catch {
+    # A missing shortcut must not stop the install: the ribbon button works without it.
+    Say ('Start цэсний холбоос үүсгэж чадсангүй: ' + $_.Exception.Message) `
+        ('Could not create the Start menu shortcut (the ribbon button still works): ' + $_.Exception.Message)
+}
 
 $uninstall = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\OfficeSpellcheck'
 $sizeKb = [int]((Get-ChildItem -LiteralPath $targetFull -Recurse -File | Measure-Object -Property Length -Sum).Sum / 1KB)

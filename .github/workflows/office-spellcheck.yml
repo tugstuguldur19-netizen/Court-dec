@@ -104,20 +104,44 @@ jobs:
       - name: Install, drive the add-in like Office does, uninstall
         shell: pwsh
         run: |
-          $target = Join-Path $env:RUNNER_TEMP 'OfficeSpellcheck'
+          # Mongolian folder names on both sides, like a user whose Windows
+          # account is called Төгстөгөлдөр and who unzipped into Downloads.
+          $source = Join-Path $env:RUNNER_TEMP 'Татаж авсан\OfficeSpellcheck'
+          New-Item -ItemType Directory -Force (Split-Path $source) | Out-Null
+          Copy-Item dist\OfficeSpellcheck $source -Recurse
+          $target = Join-Path $env:RUNNER_TEMP 'Төгстөгөлдөр\Programs\OfficeSpellcheck'
           # Windows PowerShell 5.1, the version users have
-          powershell.exe -NoProfile -ExecutionPolicy Bypass -File dist\OfficeSpellcheck\install.ps1 -Target $target -Quiet
+          powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $source 'install.ps1') -Target $target -Quiet
           if ($LASTEXITCODE -ne 0) { throw "install failed" }
           foreach ($app in 'Word', 'Excel', 'PowerPoint') {
             $k = Get-ItemProperty "HKCU:\Software\Microsoft\Office\$app\Addins\OfficeSpellcheck.Addin"
             if ($k.LoadBehavior -ne 3) { throw "$app add-in key missing" }
             Write-Host "$app : $($k.FriendlyName)"
           }
+          $clsid = '{AFFFDE13-884F-4B09-9A6A-67F1FE2D4BB3}'
+          $codeBase = (Get-ItemProperty "HKCU:\Software\Classes\CLSID\$clsid\InprocServer32").CodeBase
+          if ($codeBase -ne ('file:///' + ($target -replace '\\', '/') + '/OfficeSpellcheckAddin.dll')) { throw "unexpected CodeBase: $codeBase" }
+          $lnk = Join-Path ([Environment]::GetFolderPath('Programs')) 'Office Spellcheck.lnk'
+          $shell = New-Object -ComObject Shell.Application
+          $linkTarget = $shell.Namespace((Split-Path $lnk)).ParseName((Split-Path $lnk -Leaf)).GetLink.Path
+          if ($linkTarget -ne (Join-Path $target 'OfficeSpellcheck.exe')) { throw "Start menu shortcut points to '$linkTarget'" }
+          $u = Get-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\OfficeSpellcheck'
+          if (-not $u.UninstallString.Contains($target)) { throw "uninstall entry: $($u.UninstallString)" }
+          Write-Host "shortcut, uninstall entry, CodeBase: ok"
+
+          # The installed app runs from that folder, with a Mongolian %APPDATA% too.
+          $appdata = $env:APPDATA
+          $env:APPDATA = Join-Path $env:RUNNER_TEMP 'Төгстөгөлдөр\AppData\Roaming'
+          $p = Start-Process -FilePath (Join-Path $target 'OfficeSpellcheck.exe') `
+                 -ArgumentList 'check','smoke.docx','--json','--output','smoke2.json' -WorkingDirectory $PWD -Wait -PassThru
+          $env:APPDATA = $appdata
+          $words = (Get-Content smoke2.json -Raw -Encoding utf8 | ConvertFrom-Json).word -join ','
+          if ($p.ExitCode -ne 1 -or $words -ne 'Монгл,шийдвр,cuort') { throw "installed app: exit $($p.ExitCode), words '$words'" }
+          Write-Host "installed app from a Mongolian path: ok"
           # GitHub's Windows machines run as administrator with UAC off, and COM
           # ignores per-user (HKCU) class registrations in such processes.
           # Office on a normal PC runs un-elevated and reads them from HKCU.
           # So, for this test only, copy exactly what the installer wrote into HKLM.
-          $clsid = '{AFFFDE13-884F-4B09-9A6A-67F1FE2D4BB3}'
           foreach ($k in "Software\Classes\CLSID\$clsid", "Software\Classes\Wow6432Node\CLSID\$clsid", 'Software\Classes\OfficeSpellcheck.Addin') {
             reg copy "HKCU\$k" "HKLM\$k" /s /f | Out-Null
             if ($LASTEXITCODE -ne 0) { throw "could not copy $k" }
@@ -133,7 +157,8 @@ jobs:
           powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $target 'uninstall.ps1') -Target $target -KeepFiles -Quiet
           foreach ($k in 'HKCU:\Software\Microsoft\Office\Word\Addins\OfficeSpellcheck.Addin',
                          'HKCU:\Software\Classes\CLSID\{AFFFDE13-884F-4B09-9A6A-67F1FE2D4BB3}',
-                         'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\OfficeSpellcheck') {
+                         'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\OfficeSpellcheck',
+                         $lnk) {
             if (Test-Path $k) { throw "uninstall left $k" }
           }
           Write-Host "install / COM / uninstall: ok"
@@ -142,7 +167,7 @@ jobs:
         if: failure()
         shell: pwsh
         run: |
-          $target = Join-Path $env:RUNNER_TEMP 'OfficeSpellcheck'
+          $target = Join-Path $env:RUNNER_TEMP 'Төгстөгөлдөр\Programs\OfficeSpellcheck'
           $dll = Join-Path $target 'OfficeSpellcheckAddin.dll'
           Write-Host "--- files"; Get-ChildItem $target -File | Select-Object Name, Length | Format-Table | Out-String | Write-Host
           Write-Host "--- registration"; reg query "HKCU\Software\Classes\CLSID\{AFFFDE13-884F-4B09-9A6A-67F1FE2D4BB3}" /s
