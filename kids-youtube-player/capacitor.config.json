@@ -1,0 +1,13 @@
+{
+  "appId": "com.kidsplayer.app",
+  "appName": "Kids Player",
+  "webDir": "dist",
+  "server": {
+    "hostname": "com.kidsplayer.app",
+    "androidScheme": "https"
+  },
+  "android": {
+    "allowMixedContent": false,
+    "webContentsDebuggingEnabled": false
+  }
+}

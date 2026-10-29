@@ -1,0 +1,59 @@
+name: Kids Player APK
+
+on:
+  push:
+    paths:
+      - 'kids-youtube-player/**'
+      - '.github/workflows/kids-player-android.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: kids-youtube-player
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: kids-youtube-player/package-lock.json
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - run: npm ci
+      - run: npm test
+      - run: npm run android:sync
+
+      - name: Build debug APK
+        working-directory: kids-youtube-player/android
+        run: ./gradlew assembleDebug --no-daemon
+
+      - name: Name the APK
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk kids-player.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kids-player-apk
+          path: kids-youtube-player/kids-player.apk
+
+      - name: Publish as a release (easy download from a phone)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: kids-player-build-${{ github.run_number }}
+          name: Kids Player build ${{ github.run_number }}
+          target_commitish: ${{ github.sha }}
+          prerelease: true
+          body: |
+            Android app built from ${{ github.ref_name }} (${{ github.sha }}).
+            On your Android phone, tap **kids-player.apk** below to download and install it.
+          files: kids-youtube-player/kids-player.apk
