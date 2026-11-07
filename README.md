@@ -7,4 +7,4 @@ AI-powered analysis of Mongolian court decisions (source: shuukh.mn) for lawyers
 
 ## Also in this repo
 
-- **[Kids Player](kids-youtube-player/README.md):** an Android YouTube player for children that shows only approved channels, has no Shorts, and keeps a video on screen for at least a minute.
+- **[Curated](kids-youtube-player/README.md):** YouTube without Shorts, showing only channels you approve. Runs on iPhone as a home-screen web app and on Android.

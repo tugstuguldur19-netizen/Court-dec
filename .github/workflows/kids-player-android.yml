@@ -1,4 +1,4 @@
-name: Kids Player APK
+name: Curated Android APK
 
 on:
   push:
@@ -39,21 +39,21 @@ jobs:
         run: ./gradlew assembleDebug --no-daemon
 
       - name: Name the APK
-        run: cp android/app/build/outputs/apk/debug/app-debug.apk kids-player.apk
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk curated.apk
 
       - uses: actions/upload-artifact@v4
         with:
-          name: kids-player-apk
-          path: kids-youtube-player/kids-player.apk
+          name: curated-apk
+          path: kids-youtube-player/curated.apk
 
       - name: Publish as a release (easy download from a phone)
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: kids-player-build-${{ github.run_number }}
-          name: Kids Player build ${{ github.run_number }}
+          tag_name: curated-build-${{ github.run_number }}
+          name: Curated build ${{ github.run_number }}
           target_commitish: ${{ github.sha }}
           prerelease: true
           body: |
             Android app built from ${{ github.ref_name }} (${{ github.sha }}).
-            On your Android phone, tap **kids-player.apk** below to download and install it.
-          files: kids-youtube-player/kids-player.apk
+            On your Android phone, tap **curated.apk** below to download and install it.
+          files: kids-youtube-player/curated.apk

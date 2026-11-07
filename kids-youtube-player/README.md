@@ -1,53 +1,48 @@
-# Kids Player
+# Curated
 
-An Android YouTube player for children:
+YouTube without Shorts, showing only the channels you approve.
 
-- **Only channels you approve.** The child can't search YouTube.
-- **No Shorts and no live streams.** Only regular videos appear.
-- **No hopping between videos.** Once a video starts, the child can't leave it
-  until it has actually played for 1 minute. Paused time doesn't count. Closing
-  and reopening the app brings back the same video.
-- **Parent PIN** protects the settings. You can also use the PIN to end the
-  1-minute lock early.
+- A YouTube-style feed, watch page and search, with videos only from your approved channels.
+- No Shorts and no live streams: the app reads each channel's list of regular videos only.
+- "Up next" and search never show anything outside your channels. If a link inside the
+  player tries to open a video from another channel, the app switches back.
+- Light and dark mode follow the phone's setting.
 
 Design notes are in [DESIGN.md](DESIGN.md).
 
-## Install on the phone
+## iPhone and iPad
 
-1. On the Android phone, open this repository's **Releases** page on GitHub.
-   Open the newest "Kids Player build" and tap **kids-player.apk**.
-2. Open the downloaded file. Android will ask you to allow installing apps from
-   your browser. Allow it and tap **Install**.
-3. Open **Kids Player**, choose a parent PIN, and follow the steps below.
+The iPhone version is a web app you add to the home screen. It opens full screen like a
+normal app, with no App Store or Apple account needed.
 
-A new APK is built automatically each time the code in `kids-youtube-player/`
-changes (see `.github/workflows/kids-player-android.yml`).
+1. On the iPhone, open **https://tugstuguldur19-netizen.github.io/Court-dec/** in **Safari**.
+2. Tap the **Share** button, then **Add to Home Screen**, then **Add**.
+3. Open **Curated** from the home screen. The Channels tab opens first: paste your
+   YouTube API key (steps below), then add channels.
 
-## First-time setup (parent)
+Each phone keeps its own channel list and key. The web app is rebuilt and republished
+automatically whenever code in `kids-youtube-player/` changes
+(`.github/workflows/curated-web.yml`). It is served from the repository's `gh-pages` branch.
 
-1. **Get a free YouTube API key** (about 5 minutes, easiest on a computer):
-   1. Go to <https://console.cloud.google.com> and sign in.
-   2. Create a project (any name).
-   3. Open **APIs & Services → Library**, search **YouTube Data API v3** and
-      press **Enable**.
-   4. Open **APIs & Services → Credentials → Create credentials → API key**.
-   5. Copy the key (it starts with `AIza`).
-2. In the app's parent settings, paste the key and press **Save**.
-3. Add channels. Paste a channel link (`https://www.youtube.com/@SomeChannel`)
-   or type its handle (`@SomeChannel`). Tap the trash icon to remove one.
-4. Tap **Done**. Your child now sees the videos.
+## Android
 
-To get back to the settings later, tap the lock icon at the top right and enter
-your PIN. After 5 wrong PIN attempts, the PIN pad locks for 5 minutes.
+Open this repository's **Releases** page on the phone, open the newest "Curated build" and
+tap **curated.apk** to install it (`.github/workflows/kids-player-android.yml` builds it).
+The Android app uses the same code as the web app.
 
-## Keep your child inside the app
+## Get a free YouTube API key (about 5 minutes)
 
-An app can't stop the Home button. Android can:
+1. Go to <https://console.cloud.google.com> and sign in.
+2. Create a project (any name).
+3. Open **APIs & Services → Library**, search **YouTube Data API v3** and press **Enable**.
+4. Open **APIs & Services → Credentials → Create credentials → API key**. Copy the key
+   (it starts with `AIza`).
+5. Recommended: open the key, set **Application restrictions → Websites** and add
+   `https://tugstuguldur19-netizen.github.io/*`, and set **API restrictions** to
+   *YouTube Data API v3*. Then nobody else can use your key from another site.
+   (Leave application restrictions off if you also use the Android app with the same key.)
 
-- **App pinning:** Settings → Security (or "Security & privacy → More") → App
-  pinning → On. Open Kids Player, open Recent apps, tap the app's icon and
-  choose **Pin**. Unpinning needs your phone's lock screen PIN.
-- **Google Family Link** can also block or time-limit the real YouTube app.
+The key is stored only on your phone; it is never put in the code.
 
 ## Development
 
@@ -56,19 +51,16 @@ npm install
 npm run dev        # run in a browser at http://localhost:5173
 npm test           # unit tests (Vitest)
 npm run test:e2e   # full flow in Chromium with YouTube mocked; screenshots in e2e/screenshots/
-npm run android:sync && (cd android && ./gradlew assembleDebug)   # APK; needs the Android SDK
+npm run android:sync && (cd android && ./gradlew assembleDebug)   # Android APK; needs the Android SDK
 ```
 
-The web app is plain JavaScript (Vite). Capacitor wraps it as an Android app.
-`android/app/src/main/java/com/kidsplayer/app/GuardedWebViewClient.java` blocks
-links that would leave the app.
+Plain JavaScript and Vite. Capacitor wraps the same build as the Android app;
+`android/app/src/main/java/com/kidsplayer/app/GuardedWebViewClient.java` stops links
+from leaving it.
 
 ## Known limits
 
-- Some channels don't allow their videos to play inside other apps. Those
-  videos show "This channel doesn't let its videos play in other apps".
-- Playback inside the app depends on YouTube accepting the app as an embedder.
-  The app identifies itself as `https://com.kidsplayer.app`, which is the usual
-  fix for YouTube "Error 152/153". If those errors still appear, tell me.
-- The APK is a debug build signed with a debug key. That's fine for
-  installing on your own phones, but not for the Play Store.
+- Search looks through the videos the app has loaded (the newest 50 per channel, more after
+  "Show more videos"), so very old videos may not show up in search until loaded.
+- Some channels don't allow their videos to play in other apps; those show a message.
+- On iPhone, Safari may not start a video with sound until you tap play.

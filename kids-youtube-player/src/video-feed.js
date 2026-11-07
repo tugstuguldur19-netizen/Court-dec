@@ -3,12 +3,13 @@ export const CACHE_TTL_MS = 3 * 60 * 60 * 1000;
 /**
  * The child's video list: every approved channel's regular uploads merged
  * newest first. Each channel's pages are cached in storage under
- * `videos:<channelId>` so the API quota lasts and the list works offline.
+ * `videos2:<channelId>` so the API quota lasts and the list works offline.
  *
  * `fetchPage(channelId, pageToken)` returns `{videos, nextPageToken}`.
  */
 export function createVideoFeed({ storage, fetchPage, now = Date.now, ttlMs = CACHE_TTL_MS }) {
-  const cacheKey = (channelId) => `videos:${channelId}`;
+  // v2: entries also hold each video's length and view count.
+  const cacheKey = (channelId) => `videos2:${channelId}`;
 
   async function refresh(channel, force, errors) {
     const cached = storage.get(cacheKey(channel.id));

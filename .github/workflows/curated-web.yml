@@ -1,0 +1,43 @@
+name: Curated web app (iPhone)
+
+on:
+  push:
+    paths:
+      - 'kids-youtube-player/**'
+      - '.github/workflows/curated-web.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: curated-web
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: kids-youtube-player
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: kids-youtube-player/package-lock.json
+
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+
+      # Publishes the built app to the gh-pages branch, which GitHub Pages
+      # serves at https://<owner>.github.io/<repo>/
+      - uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: kids-youtube-player/dist
+          force_orphan: true
+          commit_message: 'Deploy Curated web app from ${{ github.sha }}'

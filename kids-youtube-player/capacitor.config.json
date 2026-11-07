@@ -1,6 +1,6 @@
 {
   "appId": "com.kidsplayer.app",
-  "appName": "Kids Player",
+  "appName": "Curated",
   "webDir": "dist",
   "server": {
     "hostname": "com.kidsplayer.app",

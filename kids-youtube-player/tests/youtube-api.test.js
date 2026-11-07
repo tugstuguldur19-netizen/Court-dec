@@ -1,5 +1,12 @@
 import { describe, it, expect, vi } from 'vitest';
-import { resolveChannel, fetchUploads, longFormPlaylistId, YouTubeApiError } from '../src/youtube-api.js';
+import {
+  resolveChannel,
+  fetchUploads,
+  fetchUploadsWithDetails,
+  fetchVideoDetails,
+  longFormPlaylistId,
+  YouTubeApiError,
+} from '../src/youtube-api.js';
 
 const ID = 'UCbCmjCuTUZos6Inko4u57UQ';
 
@@ -125,5 +132,48 @@ describe('fetchUploads', () => {
   it('treats a channel without regular videos as empty', async () => {
     const fetchImpl = () => apiError(404, 'playlistNotFound');
     expect(await fetchUploads('KEY', ID, undefined, fetchImpl)).toEqual({ videos: [], nextPageToken: null });
+  });
+});
+
+describe('fetchVideoDetails', () => {
+  it('asks for 50 ids at a time and maps length and views', async () => {
+    const ids = Array.from({ length: 51 }, (_, i) => `id${i}`);
+    const fetchImpl = vi.fn((url) => {
+      const asked = new URL(url).searchParams.get('id').split(',');
+      return jsonResponse({
+        items: asked.map((id) => ({ id, contentDetails: { duration: 'PT1M5S' }, statistics: { viewCount: '42' } })),
+      });
+    });
+    const details = await fetchVideoDetails('KEY', ids, fetchImpl);
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+    const first = new URL(fetchImpl.mock.calls[0][0]);
+    expect(first.pathname).toBe('/youtube/v3/videos');
+    expect(first.searchParams.get('part')).toBe('contentDetails,statistics');
+    expect(first.searchParams.get('id').split(',')).toHaveLength(50);
+    expect(details.id50).toEqual({ duration: 'PT1M5S', views: 42 });
+  });
+
+  it('copes with hidden view counts', async () => {
+    const fetchImpl = () => jsonResponse({ items: [{ id: 'a', contentDetails: { duration: 'PT1M' }, statistics: {} }] });
+    expect(await fetchVideoDetails('KEY', ['a'], fetchImpl)).toEqual({ a: { duration: 'PT1M', views: null } });
+  });
+});
+
+describe('fetchUploadsWithDetails', () => {
+  it('fills in length and views for each video', async () => {
+    const fetchImpl = vi.fn((url) => {
+      if (url.includes('/playlistItems')) return jsonResponse({ items: [playlistItem('vid00000001', 'Song')] });
+      return jsonResponse({
+        items: [{ id: 'vid00000001', contentDetails: { duration: 'PT3M12S' }, statistics: { viewCount: '1200000' } }],
+      });
+    });
+    const page = await fetchUploadsWithDetails('KEY', ID, undefined, fetchImpl);
+    expect(page.videos[0]).toMatchObject({ id: 'vid00000001', duration: 'PT3M12S', views: 1200000 });
+  });
+
+  it('skips the details call for an empty page', async () => {
+    const fetchImpl = vi.fn(() => jsonResponse({ items: [] }));
+    await fetchUploadsWithDetails('KEY', ID, undefined, fetchImpl);
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
   });
 });

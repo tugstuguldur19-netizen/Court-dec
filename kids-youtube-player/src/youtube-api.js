@@ -48,6 +48,34 @@ export async function fetchUploads(apiKey, channelId, pageToken, fetchImpl = fet
   return { videos, nextPageToken: data.nextPageToken ?? null };
 }
 
+/**
+ * Length and view count for up to 50 videos per request:
+ * `{ [videoId]: { duration: 'PT3M12S', views: 1234 } }`.
+ */
+export async function fetchVideoDetails(apiKey, ids, fetchImpl = fetch) {
+  const details = {};
+  for (let i = 0; i < ids.length; i += 50) {
+    const batch = ids.slice(i, i + 50);
+    const data = await get('videos', { part: 'contentDetails,statistics', id: batch.join(','), maxResults: 50 }, apiKey, fetchImpl);
+    for (const item of data.items ?? []) {
+      const views = item.statistics?.viewCount;
+      details[item.id] = {
+        duration: item.contentDetails?.duration ?? '',
+        views: views == null ? null : Number(views),
+      };
+    }
+  }
+  return details;
+}
+
+/** fetchUploads() with each video's length and view count filled in. */
+export async function fetchUploadsWithDetails(apiKey, channelId, pageToken, fetchImpl = fetch) {
+  const page = await fetchUploads(apiKey, channelId, pageToken, fetchImpl);
+  if (!page.videos.length) return page;
+  const details = await fetchVideoDetails(apiKey, page.videos.map((v) => v.id), fetchImpl);
+  return { ...page, videos: page.videos.map((v) => ({ ...v, duration: '', views: null, ...details[v.id] })) };
+}
+
 function isWatchable(item) {
   const s = item.snippet;
   return Boolean(s?.videoOwnerChannelId && s.resourceId?.videoId) && !HIDDEN_TITLES.has(s.title);
